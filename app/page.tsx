@@ -1,9 +1,7 @@
-import { Button } from "@/components/ui/button";
 import { BarChart, Calendar, Repeat, Sparkle, Bell, Lock } from "lucide-react";
 import Image from "next/image";
 import Feature from "./components/Feature";
 import PricingCard from "./components/PricingCard";
-import PrimaryButton from "./components/PrimaryButton";
 
 const features = [
 	{
@@ -81,8 +79,8 @@ export default async function Home() {
 							</p>
 						</div>
 						<div className="flex gap-4">
-							<PrimaryButton text="Get Started" />
-							<Button variant="outline">Learn More</Button>
+							<button className="btn btn-primary">Get Started</button>
+							<button className="btn btn-outline">Learn More</button>
 						</div>
 					</div>
 					<div className="flex w-1/3">
