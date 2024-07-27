@@ -1,5 +1,11 @@
 import React from "react";
-import { SessionProvider } from "next-auth/react";
-export default function Calendar() {
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
+
+export default async function Calendar() {
+	const session = await getServerSession();
+	if (!session) {
+		redirect("/");
+	}
 	return <div>Calendar</div>;
 }

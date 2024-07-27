@@ -2,6 +2,10 @@ import { AtSign, Calendar, DollarSign, House, LayoutDashboard, Settings } from "
 import HeaderButton from "./HeaderButton";
 import Logo from "./Logo";
 import React from "react";
+import SignIn from "./SignIn";
+import SignUp from "./SignUp";
+import { getServerSession } from "next-auth";
+import SignOut from "./SignOut";
 
 const buttons = [
 	{
@@ -36,7 +40,9 @@ const buttons = [
 	},
 ];
 
-export default function Header() {
+export default async function Header() {
+	const session = await getServerSession();
+
 	return (
 		<header className="flex justify-center items-between w-screen max-w-full px-8 py-3">
 			<div className="flex items-center w-1/6">
@@ -54,10 +60,17 @@ export default function Header() {
 				</ul>
 			</div>
 			<div className="flex items-center justify-end gap-4 w-1/6">
-				<a href="/register">
-					<button className="btn btn-primary">Sign up</button>
-				</a>
-				<button className="btn btn-outline">Sign in</button>
+				{session ? (
+					<>
+						<p>{session.user?.name}</p>
+						<SignOut />
+					</>
+				) : (
+					<>
+						<SignUp />
+						<SignIn />
+					</>
+				)}
 			</div>
 		</header>
 	);
