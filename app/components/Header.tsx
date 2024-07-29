@@ -57,7 +57,9 @@ export default function Header() {
 			</div>
 			<div className="flex items-center justify-end gap-4 w-1/6">
 				<Button variant="outline">Sign in</Button>
-				<PrimaryButton text="Sign up" />
+				<a href="/register">
+					<PrimaryButton text="Sign up" />
+				</a>
 			</div>
 		</header>
 	);

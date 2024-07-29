@@ -4,7 +4,6 @@ import Image from "next/image";
 import Feature from "./components/Feature";
 import PricingCard from "./components/PricingCard";
 import PrimaryButton from "./components/PrimaryButton";
-import { parseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 const features = [
 	{
@@ -68,7 +67,7 @@ const pricingCards = [
 	},
 ];
 
-export default function Home() {
+export default async function Home() {
 	return (
 		<div className="flex flex-col justify-center items-center gap-24 w-screenm max-w-full">
 			<div className="flex justify-center items-center h-[60vh]">
