@@ -4,6 +4,7 @@ import Image from "next/image";
 import Feature from "./components/Feature";
 import PricingCard from "./components/PricingCard";
 import PrimaryButton from "./components/PrimaryButton";
+import { parseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 const features = [
 	{
@@ -39,6 +40,31 @@ const features = [
 		title: "Secure and Reliable",
 		description: "We prioritize your security with top-notch encryption and data protection practices, so you can focus on creating amazing content.",
 		icon: <Lock />,
+	},
+];
+
+const pricingCards = [
+	{
+		title: "Basic",
+		price: 7.99,
+		features: ["2 social media accounts", "1 post per day", "2 social media platforms"],
+	},
+	{
+		title: "Premium",
+		price: 14.99,
+		features: ["5 social media accounts", "10 posts per day", "3 social media platforms", "Basic analytics", "Community support"],
+	},
+	{
+		title: "Pro",
+		price: 24.99,
+		features: [
+			"10 social media accounts",
+			"20 posts per day",
+			"5 social media platforms",
+			"Advanced customer support",
+			"Content curation features",
+			"Advanced analytics",
+		],
 	},
 ];
 
@@ -82,9 +108,9 @@ export default function Home() {
 						<p className="text-slate-600">Choose the plan that fits your needs.</p>
 					</div>
 					<div className="flex gap-12">
-						<PricingCard />
-						<PricingCard />
-						<PricingCard />
+						{pricingCards.map((card, i) => {
+							return <PricingCard key={i} title={card.title} price={card.price} features={card.features} />;
+						})}
 					</div>
 				</div>
 			</div>
