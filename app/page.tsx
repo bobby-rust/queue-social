@@ -2,6 +2,9 @@ import { BarChart, Calendar, Repeat, Sparkle, Bell, Lock } from "lucide-react";
 import Image from "next/image";
 import Feature from "./components/Feature";
 import PricingCard from "./components/PricingCard";
+import { getServerSession } from "next-auth";
+import { getServers } from "dns";
+import { redirect } from "next/navigation";
 
 const features = [
 	{
@@ -66,9 +69,16 @@ const pricingCards = [
 ];
 
 export default async function Home() {
+	const session = await getServerSession();
+
+	if (session) {
+		redirect("/calendar");
+	}
+
+	console.log(session);
 	return (
 		<div className="flex flex-col justify-center items-center gap-24 w-screenm max-w-full">
-			<div className="flex justify-center items-center h-[60vh]">
+			<div className="flex justify-center items-center h-[70vh]">
 				<div className="flex justify-center items-center p-12">
 					<div className="flex flex-col gap-8 w-1/3">
 						<div className="flex flex-col gap-4">
@@ -84,7 +94,14 @@ export default async function Home() {
 						</div>
 					</div>
 					<div className="flex w-1/3">
-						<Image src="/social_media_communication-removebg.png" width={400} height={400} alt="people on social media with notification icons" />
+						<Image
+							src="/social_media_communication-removebg.png"
+							width={600}
+							height={500}
+							alt="people on social media with notification icons"
+							className="max-w-max h-auto"
+							priority
+						/>
 					</div>
 				</div>
 			</div>
