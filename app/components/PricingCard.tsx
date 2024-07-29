@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import React from "react";
 
@@ -33,7 +32,7 @@ export default function PricingCard(props: PricingCardProps) {
 				</div>
 			</div>
 			<div className="flex justify-center items-end">
-				<Button className="">Get Started</Button>
+				<button className="btn btn-primary">Get Started</button>
 			</div>
 		</div>
 	);

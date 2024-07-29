@@ -2,8 +2,6 @@ import { AtSign, Calendar, DollarSign, House, LayoutDashboard, Settings } from "
 import HeaderButton from "./HeaderButton";
 import Logo from "./Logo";
 import React from "react";
-import { Button } from "@/components/ui/button";
-import PrimaryButton from "./PrimaryButton";
 
 const buttons = [
 	{
@@ -56,10 +54,10 @@ export default function Header() {
 				</ul>
 			</div>
 			<div className="flex items-center justify-end gap-4 w-1/6">
-				<Button variant="outline">Sign in</Button>
 				<a href="/register">
-					<PrimaryButton text="Sign up" />
+					<button className="btn btn-primary">Sign up</button>
 				</a>
+				<button className="btn btn-outline">Sign in</button>
 			</div>
 		</header>
 	);
