@@ -1,4 +1,3 @@
-import { AtSign, Calendar, DollarSign, House, LayoutDashboard, Settings } from "lucide-react";
 import HeaderButton from "./HeaderButton";
 import Logo from "./Logo";
 import React from "react";
@@ -6,72 +5,68 @@ import SignIn from "./SignIn";
 import SignUp from "./SignUp";
 import { getServerSession } from "next-auth";
 import SignOut from "./SignOut";
+import { authOptions } from "../api/auth/[...nextauth]/route";
+import { AtSign, BadgeCheck, CircleCheck, DollarSign, HelpCircle, House, Info, LayoutDashboard, Mail, Menu, Settings } from "lucide-react";
 
-const buttons = [
+const landingButtons = [
 	{
-		title: "Home",
-		href: "/",
-		icon: <House />,
-	},
-	{
-		title: "Calendar",
-		href: "/calendar",
-		icon: <Calendar />,
-	},
-	{
-		title: "Dashboard",
-		href: "/dashboard",
-		icon: <LayoutDashboard />,
-	},
-	{
-		title: "Settings",
-		href: "/settings",
-		icon: <Settings />,
-	},
-	{
-		title: "Contact",
-		href: "/contact",
-		icon: <AtSign />,
+		title: "Features",
+		href: "#features",
+		icon: <CircleCheck />,
 	},
 	{
 		title: "Pricing",
-		href: "/pricing",
+		href: "#pricing",
 		icon: <DollarSign />,
+	},
+	{
+		title: "Contact",
+		href: "#contact",
+		icon: <Mail />,
+	},
+	{
+		title: "About Us",
+		href: "#about-us",
+		icon: <Info />,
+	},
+];
+
+const homeButtons = [
+	{
+		title: "Feedback",
+		href: "/feedback",
+		icon: <BadgeCheck />,
+	},
+	{
+		title: "Help",
+		href: "/help",
+		icon: <HelpCircle />,
 	},
 ];
 
 export default async function Header() {
-	const session = await getServerSession();
+	const session = await getServerSession(authOptions);
 
 	return (
-		<header className="flex justify-center items-between w-screen max-w-full px-8 py-3">
-			<div className="flex items-center w-1/6">
-				<Logo />
-			</div>
-			<div className="flex justify-center items-center w-2/3">
+		<div className={`flex justify-center items-center p-4 border-b-2 fixed bg-base-100`}>
+			<div className="w-1/3">{!session && <h1 className="text-xl btn btn-ghost">QueueSocial</h1>}</div>
+			<div className="flex justify-center items-center w-1/3">
 				<ul className="flex gap-4">
-					{buttons.map((button, i) => {
-						return (
-							<li key={i}>
-								<HeaderButton title={button.title} href={button.href} icon={button.icon} />
-							</li>
-						);
-					})}
+					{!session &&
+						landingButtons.map((button, i) => {
+							return <HeaderButton key={i} {...button} />;
+						})}
+					{session &&
+						homeButtons.map((button, i) => {
+							return <HeaderButton key={i} {...button} />;
+						})}
 				</ul>
 			</div>
-			<div className="flex items-center justify-end gap-4 w-1/6">
-				{session ? (
-					<>
-						<p>{session.user?.name}</p>
-						<SignOut />
-					</>
-				) : (
-					<>
-						<SignUp />
-						<SignIn />
-					</>
-				)}
+
+			<div className="flex justify-end w-1/3 gap-4">
+				<SignUp />
+				<SignIn />
 			</div>
-		</header>
+		</div>
 	);
 }
