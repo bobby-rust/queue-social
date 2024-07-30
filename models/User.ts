@@ -5,29 +5,10 @@ export interface User extends mongoose.Document {
 	last_name: string;
 	email: string;
 	password: string | null;
-	facebook_business_pages: { page_id: string; long_page_access_token: string | null };
+	facebook_business_pages: mongoose.Schema.Types.Mixed;
 	credits: number;
 	subscription_type: string | null;
 }
-
-interface IFacebookBusinessPage {
-	page_id: string;
-	long_page_access_token: string | null;
-}
-
-const FacebookBusinessPageSchema = new mongoose.Schema<IFacebookBusinessPage>({
-	page_id: { type: String, required: true },
-	long_page_access_token: { type: String, default: null },
-});
-
-export interface FacebookBusinessPage extends mongoose.Document {
-	pages: IFacebookBusinessPage[];
-}
-
-// Create a Mongoose schema for the main document
-const FacebookBusinessPageMainSchema = new mongoose.Schema<FacebookBusinessPage>({
-	pages: { type: [FacebookBusinessPageSchema], required: true },
-});
 
 /* User schema corresponds to a collection in the mongodb database */
 const UserSchema = new mongoose.Schema<User>({
@@ -48,10 +29,10 @@ const UserSchema = new mongoose.Schema<User>({
 	},
 	password: {
 		type: String,
-		required: [true, "Please provide a password."],
+		minlength: [8, "Password must be at least 8 characters"],
 		maxlength: [60, "Password cannot be more than 60 characters"],
 	},
-	facebook_business_pages: FacebookBusinessPageMainSchema,
+	facebook_business_pages: { type: mongoose.Schema.Types.Mixed, default: [] },
 	credits: {
 		/* The number of credits the user has available */
 		type: Number,

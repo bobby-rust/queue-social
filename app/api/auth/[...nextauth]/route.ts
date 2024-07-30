@@ -11,23 +11,23 @@ import { SessionStrategy } from "next-auth";
 const dbAdapter = MongoDBAdapter(clientPromise);
 
 export const authOptions = {
+	debug: true,
 	adapter: {
 		...dbAdapter,
 		async createUser(user: any) {
-			console.log("USER: ", user);
-			const newUser = {
-				first_name: user.name.split(" ")[0] || null,
-				last_name: user.name.split(" ")[1] || null,
+			await dbConnect();
+			const newUser = new User({
 				email: user.email,
-				password: null,
-				image: user.image,
+				password: user.password,
+				first_name: user.name.split(" ")[0] || "",
+				last_name: user.name.split(" ")[1] || "",
 				facebook_business_pages: [],
-				emailVerified: user.emailVerified,
 				credits: 5,
-				subscriptionType: null,
-			};
-			const createdUser = await dbAdapter.createUser!(newUser);
-			return createdUser;
+				subscription_type: null,
+			});
+
+			await dbAdapter.createUser!(JSON.stringify(newUser));
+			return newUser;
 		},
 	},
 	providers: [
@@ -56,22 +56,37 @@ export const authOptions = {
 		}),
 	],
 	callbacks: {
-		async signIn({ user, account, profile, email, credentials }: any) {
+		async signIn(request: any) {
 			await dbConnect();
 			return true;
 		},
 		async redirect({ url, baseUrl }: any) {
 			return baseUrl;
 		},
-		async jwt({ token, user, account, profile, isNewUser }: any) {
+		async jwt(request: any) {
+			await dbConnect();
+			const user = await User.findOne({ email: request.token.email });
 			if (user) {
-				token.id = user.id;
+				request.token.first_name = user.first_name;
+				request.token.last_name = user.last_name;
+				request.token.facebook_business_pages = user.facebook_business_pages;
+				request.token.credits = user.credits;
+				request.token.subscription_type = user.subscription_type;
 			}
+			console.log("JWT REQUEST: ", request);
 
-			return token;
+			return request.token;
 		},
-		async session({ token, session }: any) {
-			return session;
+		async session(request: any) {
+			console.log("request in session: ", request);
+			if (request.token) {
+				request.session.user.facebook_business_pages = request.token.facebook_business_pages;
+				request.session.user.credits = request.token.credits;
+				request.session.user.subscription_type = request.token.subscription_type;
+				request.session.user.first_name = request.token.first_name;
+				request.session.user.last_name = request.token.last_name;
+			}
+			return request.session;
 		},
 	},
 	session: {

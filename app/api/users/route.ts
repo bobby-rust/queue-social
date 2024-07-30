@@ -18,8 +18,6 @@ export async function POST(req: Request) {
 			subscription_type: subscriptionType,
 		});
 
-		console.log("New user: ", newUser);
-
 		await newUser.save();
 		return new Response(JSON.stringify({ success: true, data: newUser }), { status: 201 });
 	} catch (e) {
