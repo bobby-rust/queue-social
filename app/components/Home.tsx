@@ -1,4 +1,5 @@
 import { Frown, Plus, Plug } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
 	return (
@@ -8,9 +9,9 @@ export default function Home() {
 				<Frown />
 			</h1>
 			<div className="flex flex-col gap-4">
-				<button className="btn btn-primary w-48">
+				<Link href="/posts/new" className="btn btn-primary w-48">
 					<Plus /> Create Post
-				</button>
+				</Link>
 				<button className="btn btn-outline w-48">
 					<Plug /> Connect Accounts
 				</button>

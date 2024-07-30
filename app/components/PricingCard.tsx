@@ -10,7 +10,7 @@ interface PricingCardProps {
 
 export default function PricingCard(props: PricingCardProps) {
 	return (
-		<div className="flex flex-col gap-4 border-2 rounded-lg p-8">
+		<div className="flex flex-col gap-4 border-2 rounded-lg p-12">
 			<div className="flex flex-col flex-grow gap-4 items-center ">
 				<div className="inline-flex flex-col gap-2 max-w-52">
 					<h2 className="text-xl font-semibold">{props.title}</h2>

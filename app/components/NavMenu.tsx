@@ -1,34 +1,16 @@
-"use client";
-
-import { House, Newspaper, Settings, AtSign, DollarSign, Plus, User } from "lucide-react";
+import { House, Newspaper, Settings, AtSign, DollarSign, Plus, User, BadgeCheck, CircleCheck, HelpCircle, Info, Mail } from "lucide-react";
 import { ReactNode, useState } from "react";
 import HeaderButton from "./HeaderButton";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../api/auth/[...nextauth]/route";
+import Image from "next/image";
+import Link from "next/link";
 
-const buttons = [
-	{
-		title: "Home",
-		href: "/",
-		icon: <House />,
-	},
-	{
-		title: "Settings",
-		href: "/settings",
-		icon: <Settings />,
-	},
-	{
-		title: "Contact",
-		href: "/contact",
-		icon: <AtSign />,
-	},
-	{
-		title: "Pricing",
-		href: "/pricing",
-		icon: <DollarSign />,
-	},
-];
-export default function NavMenu() {
+export default async function NavMenu() {
+	const session = await getServerSession(authOptions);
+	console.log(session);
 	return (
-		<div className="flex flex-col bg-base-200 w-72 h-screen fixed p-2">
+		<div className="flex flex-col justify-between w-64 bg-base-200 fixed top-0 h-screen overflow-y-auto p-3">
 			<div className="flex justify-center items-center">
 				<button className="btn btn-ghost max-w-fit">
 					<h1 className="bold text-xl">QueueSocial</h1>
@@ -38,10 +20,16 @@ export default function NavMenu() {
 				<div className="flex flex-col h-full justify-between">
 					<ul className="flex flex-col gap-4">
 						<li className="flex-1">
-							<a className="btn btn-ghost w-full justify-start">
+							<Link href="/" className="btn btn-ghost w-full justify-start">
 								<Newspaper />
 								Feed
-							</a>
+							</Link>
+						</li>
+						<li className="flex-1">
+							<Link href="/posts/new" className="btn btn-ghost w-full justify-start">
+								<Plus />
+								Create Post
+							</Link>
 						</li>
 						<li className="flex-1">
 							<a className="btn btn-ghost w-full justify-start">
@@ -49,17 +37,14 @@ export default function NavMenu() {
 								Connect Accounts
 							</a>
 						</li>
-						<li className="flex-1">
-							<a className="btn btn-ghost w-full justify-start">
-								<Plus />
-								Create Post
-							</a>
-						</li>
 					</ul>
-					<ul>
+					<ul className="flex flex-col gap-4">
 						<li className="flex-1">
 							<a className="btn btn-ghost w-full justify-start">
-								<User /> Profile
+								{session?.user?.image && (
+									<Image className="rounded-full" src={session?.user?.image} alt={"User profile"} width={24} height={24} />
+								)}
+								{session?.user?.first_name || "" + " " + session?.user?.last_name || ""}
 							</a>
 						</li>
 						<li className="flex-1">

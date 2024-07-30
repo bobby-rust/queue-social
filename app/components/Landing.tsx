@@ -65,7 +65,7 @@ const pricingCards = [
 			"Content curation features",
 			"Advanced analytics",
 		],
-		targetAudience: "For businesses who want to scale their social media presence.",
+		targetAudience: "For businesses who want to scale their social media presence and increase the efficiency of their marketing teams.",
 	},
 ];
 
