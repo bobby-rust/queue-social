@@ -1,17 +1,10 @@
-import { BarChart, Calendar, Repeat, Sparkle, Bell, Lock } from "lucide-react";
-import Image from "next/image";
-import Feature from "./components/Feature";
-import PricingCard from "./components/PricingCard";
 import { getServerSession } from "next-auth";
-import { getServers } from "dns";
-import { redirect } from "next/navigation";
 import { authOptions } from "./api/auth/[...nextauth]/route";
 import Landing from "./components/Landing";
 import Home from "./components/Home";
 
 export default async function Root() {
-	const session = await getServerSession(authOptions);
-	console.log("Root session: ", session);
-
-	return <>{session ? <Home /> : <Landing />}</>;
+    const session = await getServerSession(authOptions);
+    console.log("Root session: ", session);
+    return <>{session ? <Home /> : <Landing />}</>;
 }
