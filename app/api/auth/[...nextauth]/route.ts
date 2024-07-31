@@ -4,9 +4,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import dbConnect from "@/lib/dbConnect";
 import clientPromise from "@/lib/mongodb";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
-import { signIn } from "next-auth/react";
 import User from "@/models/User";
 import { SessionStrategy } from "next-auth";
+import { getSession } from "next-auth/react";
+import { Types } from "mongoose";
 
 const dbAdapter = MongoDBAdapter(clientPromise);
 
@@ -16,7 +17,10 @@ export const authOptions = {
 		...dbAdapter,
 		async createUser(user: any) {
 			await dbConnect();
-			const newUser = new User({
+			console.log("User in createUser: ", user);
+			const newUser = {
+				id: new Types.ObjectId().toString(),
+				name: user.name,
 				email: user.email,
 				password: user.password,
 				first_name: user.name.split(" ")[0] || "",
@@ -24,9 +28,11 @@ export const authOptions = {
 				facebook_business_pages: [],
 				credits: 5,
 				subscription_type: null,
-			});
+				emailVerified: user.emailVerified,
+				image: user.image,
+			};
 
-			await dbAdapter.createUser!(JSON.stringify(newUser));
+			await dbAdapter.createUser!(newUser);
 			return newUser;
 		},
 	},
@@ -38,6 +44,7 @@ export const authOptions = {
 				password: { label: "Password", type: "password" },
 			},
 			async authorize(credentials: any) {
+				console.log("Credentials in authorize: ", credentials);
 				await dbConnect();
 				const user = await User.findOne({ email: credentials.email });
 				if (!user) {
@@ -63,30 +70,31 @@ export const authOptions = {
 		async redirect({ url, baseUrl }: any) {
 			return baseUrl;
 		},
-		async jwt(request: any) {
+		async jwt({ token }: any) {
 			await dbConnect();
-			const user = await User.findOne({ email: request.token.email });
+			const user = await User.findOne({ email: token.email });
 			if (user) {
-				request.token.first_name = user.first_name;
-				request.token.last_name = user.last_name;
-				request.token.facebook_business_pages = user.facebook_business_pages;
-				request.token.credits = user.credits;
-				request.token.subscription_type = user.subscription_type;
+				token.first_name = user.first_name;
+				token.last_name = user.last_name;
+				token.facebook_business_pages = user.facebook_business_pages;
+				token.credits = user.credits;
+				token.subscription_type = user.subscription_type;
+				// token.image = user.image;
 			}
-			console.log("JWT REQUEST: ", request);
-
-			return request.token;
+			console.log("JWT token: ", token);
+			return token;
 		},
-		async session(request: any) {
-			console.log("request in session: ", request);
-			if (request.token) {
-				request.session.user.facebook_business_pages = request.token.facebook_business_pages;
-				request.session.user.credits = request.token.credits;
-				request.session.user.subscription_type = request.token.subscription_type;
-				request.session.user.first_name = request.token.first_name;
-				request.session.user.last_name = request.token.last_name;
+		async session({ session, token }: any) {
+			if (session) {
+				session.user.facebook_business_pages = token.facebook_business_pages;
+				session.user.credits = token.credits;
+				session.user.subscription_type = token.subscription_type;
+				session.user.first_name = token.first_name;
+				session.user.last_name = token.last_name;
+				session.user.image = token.picture;
 			}
-			return request.session;
+
+			return session;
 		},
 	},
 	session: {

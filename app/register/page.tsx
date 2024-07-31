@@ -27,10 +27,12 @@ const SignupSchema = Yup.object().shape({
 });
 
 export default function Register() {
+	const [disableSubmit, setDisableSubmit] = React.useState(false);
 	const router = useRouter();
 	const handleRegisterSubmit = async (e: any) => {
+		setDisableSubmit(true);
 		/* The JSON in facebookBusinessPages is snake case because that is how it is stored in the database */
-		const user = { ...e, image: null, facebookBusinessPages: { pages: [] }, emailVerified: false, credits: 5, subscriptionType: null };
+		const user = { ...e, image: null, facebookBusinessPages: [], emailVerified: false, credits: 5, subscriptionType: null };
 		const jsonUser = JSON.stringify(user);
 		const response = await fetch("/api/users", {
 			method: "POST",
@@ -43,9 +45,8 @@ export default function Register() {
 		const data = await response.json();
 		console.log(data);
 		await signIn("credentials", {
-			redirect: false,
 			email: user.email,
-			password: user.password, // If you have password-based authentication
+			password: user.password,
 		});
 		console.log("Sign up successful. Redirecting to home.");
 		router.push("/");
@@ -127,7 +128,7 @@ export default function Register() {
 									<p className="flex justify-center items-center text-xs max-w-[80%] text-center">
 										By registering, you agree to our Terms of Service and Privacy Policy
 									</p>
-									<button className="btn btn-primary w-full" type="submit">
+									<button className="btn btn-primary w-full" type="submit" disabled={disableSubmit}>
 										Register
 									</button>
 								</div>

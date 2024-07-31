@@ -1,9 +1,11 @@
 import { Frown, Plus, Plug } from "lucide-react";
 import { getServerSession } from "next-auth";
 import Link from "next/link";
+import { authOptions } from "../api/auth/[...nextauth]/route";
 
 export default async function Home() {
-	const session = await getServerSession();
+	console.log("IN home page.");
+	const session = await getServerSession(authOptions);
 	console.log("Session in Homepage: ", session);
 	return (
 		<div className="flex flex-col justify-center items-center gap-8 min-h-[70vh]">

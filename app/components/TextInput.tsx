@@ -17,7 +17,7 @@ export default function TextInput(props: TextInputProps) {
 	const { id, text, Icon, type, placeholder, required, error, touched } = props;
 	return error && touched ? (
 		<div className="tooltip tooltip-right tooltip-open tooltip-error w-full" data-tip={props.error}>
-			<label className="input input-bordered flex items-center gap-2 w-full" htmlFor={id}>
+			<label className="input input-bordered flex items-center gap-2 w-full label" htmlFor={id}>
 				<Icon />
 				<Field className="grow w-full" type={type} id={id} name={id} placeholder={placeholder} required={required} />
 			</label>

@@ -11,6 +11,7 @@ import Home from "./components/Home";
 
 export default async function Root() {
 	const session = await getServerSession(authOptions);
+	console.log("Root session: ", session);
 
 	return <>{session ? <Home /> : <Landing />}</>;
 }
