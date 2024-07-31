@@ -6,7 +6,6 @@ import clientPromise from "@/lib/mongodb";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import User from "@/models/User";
 import { SessionStrategy } from "next-auth";
-import { getSession } from "next-auth/react";
 import { Types } from "mongoose";
 
 const dbAdapter = MongoDBAdapter(clientPromise);
@@ -17,7 +16,6 @@ export const authOptions = {
 		...dbAdapter,
 		async createUser(user: any) {
 			await dbConnect();
-			console.log("User in createUser: ", user);
 			const newUser = {
 				id: new Types.ObjectId().toString(),
 				name: user.name,
@@ -44,7 +42,6 @@ export const authOptions = {
 				password: { label: "Password", type: "password" },
 			},
 			async authorize(credentials: any) {
-				console.log("Credentials in authorize: ", credentials);
 				await dbConnect();
 				const user = await User.findOne({ email: credentials.email });
 				if (!user) {
@@ -81,7 +78,6 @@ export const authOptions = {
 				token.subscription_type = user.subscription_type;
 				// token.image = user.image;
 			}
-			console.log("JWT token: ", token);
 			return token;
 		},
 		async session({ session, token }: any) {
@@ -91,7 +87,7 @@ export const authOptions = {
 				session.user.subscription_type = token.subscription_type;
 				session.user.first_name = token.first_name;
 				session.user.last_name = token.last_name;
-				session.user.image = token.picture;
+				session.user.image = token.picture; // I have no idea how it gets set to "picture" instead of "image"
 			}
 
 			return session;

@@ -14,7 +14,7 @@ export default async function Home() {
 				<Frown />
 			</h1>
 			<div className="flex flex-col gap-4">
-				<Link href="/posts/new" className="btn btn-primary w-48">
+				<Link href="/posts/create" className="btn btn-primary w-48">
 					<Plus /> Create Post
 				</Link>
 				<button className="btn btn-outline w-48">
