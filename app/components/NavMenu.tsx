@@ -23,7 +23,10 @@ export default async function NavMenu() {
                             </Link>
                         </li>
                         <li className="flex-1">
-                            <Link href="/posts/new" className="btn btn-ghost w-full justify-start">
+                            <Link
+                                href="/posts/create"
+                                className="btn btn-ghost w-full justify-start"
+                            >
                                 <Plus />
                                 Create Post
                             </Link>

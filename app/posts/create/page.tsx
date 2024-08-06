@@ -4,17 +4,16 @@ import React from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { Link } from "lucide-react";
-// import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-
 import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
+import { UploadDropzone } from "@/utils/uploadthing";
+import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 
 const CreatePostSchema = Yup.object().shape({
     content: Yup.string().required("Content is required"),
     image: Yup.mixed(),
     link: Yup.string().url("Invalid URL format"),
-    page: Yup.string().required("Page is required"), // if the form isnt submitting, make sure page is getting set.
+    page: Yup.string().required("Page is required"),
 });
 
 interface Post {
@@ -25,14 +24,15 @@ interface Post {
 }
 
 export default function CreatePost() {
-    const session: any = useSession();
-    const pages = session.data?.user?.facebook_business_accounts.pages;
+    const { data: session } = useSession();
+    const pages = session?.user?.facebook_business_accounts.pages;
     const router = useRouter();
     console.log(pages);
 
     const createPost = async (post: Post) => {
         if (post.page === "default") {
             alert("Please select a page to post to");
+            return;
         }
         console.log(post);
         for (const page of pages.data) {
@@ -70,11 +70,8 @@ export default function CreatePost() {
                         setSubmitting(false);
                     }}
                 >
-                    {({ handleSubmit, values, setFieldValue, errors, touched }) => (
-                        <Form
-                            onChange={(e: any) => console.log(e.target.value)}
-                            className="flex flex-col gap-4 w-full"
-                        >
+                    {({ handleSubmit, setFieldValue, errors, touched }) => (
+                        <Form className="flex flex-col gap-4 w-full">
                             <div className="form-control w-full min-h-80">
                                 {errors.content && touched.content ? (
                                     <div
@@ -161,7 +158,7 @@ export default function CreatePost() {
                                             type="file"
                                             placeholder="Image"
                                             className="file-input file-input-bordered"
-                                        />
+                                        ></Field>
                                     </div>
                                 ) : (
                                     <div>
@@ -170,16 +167,20 @@ export default function CreatePost() {
                                                 Add an image to your post (optional)
                                             </span>
                                         </label>
-                                        <Field
-                                            id="image"
-                                            name="image"
-                                            type="file"
-                                            placeholder="Image"
-                                            className="file-input file-input-bordered"
-                                            onChange={(e: any) => {
-                                                setFieldValue("image", e.target.files?.[0]);
+                                        <UploadDropzone
+                                            endpoint="imageUploader"
+                                            onClientUploadComplete={(res: any) => {
+                                                console.log("Files: ", res);
+                                                setFieldValue("image", {
+                                                    fileUrl: res[0].serverData.fileUrl,
+                                                    fileId: res[0].serverData.fileId,
+                                                });
+                                                alert("Upload complete");
                                             }}
-                                            accept="image/*"
+                                            onUploadError={(e: Error) => {
+                                                console.error(e.message);
+                                                alert("Upload Error");
+                                            }}
                                         />
                                     </div>
                                 )}
@@ -189,15 +190,17 @@ export default function CreatePost() {
                                 component="select"
                                 name="page"
                                 id="page"
-                                className={`select select-bordered w-full max-w-xs`}
+                                className="select select-bordered w-full max-w-xs"
                             >
-                                <option value="default" disabled selected>
+                                <option value="default" disabled>
                                     Which page would you like to post to?
                                 </option>
-                                {pages.data.map((page: any) => (
+                                {pages?.data.map((page: any) => (
                                     <option key={page.id}>{page.name}</option>
                                 ))}
                             </Field>
+                            <DatePicker />
+                            <TimePicker />
                             <button
                                 type="submit"
                                 className="btn btn-primary w-1/5"
