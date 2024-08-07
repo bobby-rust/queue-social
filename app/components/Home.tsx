@@ -14,7 +14,7 @@ export default async function Home() {
     return (
         <div className="flex flex-col justify-center items-center gap-8 min-h-[70vh]">
             <h1 className="flex gap-2 text-xl">
-                No posts to show.
+                No upcoming posts
                 <Frown />
             </h1>
             <div className="flex flex-col gap-4">

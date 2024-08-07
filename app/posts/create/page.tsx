@@ -16,31 +16,76 @@ const CreatePostSchema = Yup.object().shape({
     page: Yup.string().required("Page is required"),
 });
 
+function combineDateAndTime(day: Date, time: Date) {
+    console.log("Time received from date picker: ");
+    console.log(time);
+    const year = day.getUTCFullYear();
+    const month = day.getUTCMonth();
+    const date = day.getUTCDate();
+
+    const hours = time.getUTCHours();
+    const minutes = time.getUTCMinutes();
+    const seconds = time.getUTCSeconds();
+
+    // Create a new Date object in UTC
+    const combinedDate = new Date(Date.UTC(year, month, date, hours, minutes, seconds));
+    return combinedDate;
+}
+
 interface Post {
     content: string;
     image: any;
     link: string;
     page: any;
+    date: Date;
+    time: Date;
+    unixTimestamp: number;
 }
 
 export default function CreatePost() {
-    const { data: session } = useSession();
+    const { data: session }: any = useSession();
     const pages = session?.user?.facebook_business_accounts.pages;
     const router = useRouter();
     console.log(pages);
 
-    const createPost = async (post: Post) => {
+    const createPost = async (post: any) => {
         if (post.page === "default") {
             alert("Please select a page to post to");
             return;
         }
-        console.log(post);
+        // console.log(post);
         for (const page of pages.data) {
             if (page.name === post.page) {
                 post.page = page;
             }
         }
+        console.log(post.date.getDate().toLocaleString());
+        console.log(
+            `${post.time.getHours().toLocaleString()}:${post.time.getMinutes().toLocaleString()}:${post.time.getSeconds().toLocaleString()}`,
+        );
+        const date = combineDateAndTime(post.date, post.time);
+        console.log("UTC date: ", date.toUTCString());
+        console.log("Local date: ", date.toLocaleString());
+        const unixTimestamp = Math.floor(date.getTime() / 1000);
+        post.unixTimestamp = unixTimestamp;
+        console.log(unixTimestamp);
+        console.log(new Date(unixTimestamp * 1000).toString());
 
+        const now = new Date();
+        const nowUTC = Date.UTC(
+            now.getUTCFullYear(),
+            now.getUTCMonth(),
+            now.getUTCDate(),
+            now.getUTCHours(),
+            now.getUTCMinutes(),
+            now.getUTCSeconds(),
+        );
+        const diff = date.getTime() - nowUTC;
+        console.log(diff / 60000);
+        if (diff / 60000 < 15) {
+            alert("Please choose a time at least 15 minutes in the future.");
+            return;
+        }
         const res = await fetch("/api/users/1/posts", {
             method: "POST",
             headers: {
@@ -63,14 +108,17 @@ export default function CreatePost() {
                         image: "",
                         link: "",
                         page: "default",
+                        date: new Date(),
+                        time: new Date(),
                     }}
                     validationSchema={CreatePostSchema}
-                    onSubmit={(values, { setSubmitting }) => {
+                    onSubmit={(values, { setSubmitting, resetForm }) => {
                         createPost(values);
                         setSubmitting(false);
+                        resetForm();
                     }}
                 >
-                    {({ handleSubmit, setFieldValue, errors, touched }) => (
+                    {({ handleSubmit, values, setFieldValue, errors, touched }) => (
                         <Form className="flex flex-col gap-4 w-full">
                             <div className="form-control w-full min-h-80">
                                 {errors.content && touched.content ? (
@@ -199,13 +247,19 @@ export default function CreatePost() {
                                     <option key={page.id}>{page.name}</option>
                                 ))}
                             </Field>
-                            <DatePicker />
-                            <TimePicker />
-                            <button
-                                type="submit"
-                                className="btn btn-primary w-1/5"
-                                onClick={(e: any) => handleSubmit(e)}
-                            >
+                            <DatePicker
+                                onChange={(date) => {
+                                    setFieldValue("date", date?.toDate());
+                                    console.log(values.date);
+                                }}
+                            />
+                            <TimePicker
+                                onChange={(time) => {
+                                    setFieldValue("time", time?.toDate());
+                                    console.log(values.time);
+                                }}
+                            />
+                            <button type="submit" className="btn btn-primary w-1/5">
                                 Submit
                             </button>
                         </Form>

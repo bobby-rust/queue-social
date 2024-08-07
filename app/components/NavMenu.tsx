@@ -32,10 +32,13 @@ export default async function NavMenu() {
                             </Link>
                         </li>
                         <li className="flex-1">
-                            <a className="btn btn-ghost w-full justify-start">
+                            <Link
+                                href="/account-connect"
+                                className="btn btn-ghost w-full justify-start"
+                            >
                                 <AtSign />
                                 Connect Accounts
-                            </a>
+                            </Link>
                         </li>
                     </ul>
                     <ul className="flex flex-col gap-4">

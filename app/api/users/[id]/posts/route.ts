@@ -2,19 +2,25 @@ import { utapi } from "@/app/api/uploadthing/core";
 
 const META_API_URL = "https://graph.facebook.com/v20.0";
 const postWithImage = async (body: any) => {
-    const url = `${META_API_URL}/${body.page.id}/photos?access_token=${body.page.access_token}&url=${body.image.fileUrl}&message=${body.content}`;
+    const url = `${META_API_URL}/${body.page.id}/photos?access_token=${body.page.access_token}&url=${body.image.fileUrl}&message=${body.content}&link=${body.link || ""}&scheduled_publish_time=${body.unixTimestamp}&published=false`;
+    const reqBody: any = {
+        url: body.image.fileUrl,
+        published: "false",
+        message: body.content,
+        access_token: body.page.access_token,
+        scheduled_publish_time: body.unixTimestamp,
+    };
+
+    if (body.link !== "") {
+        reqBody.link = body.link;
+    }
     const response = await fetch(url, {
         method: "POST",
         headers: {
             "Content-Type": "multipart/form-data",
             Authorization: "OAuth " + body.page.access_token,
         },
-        body: JSON.stringify({
-            url: body.image.fileUrl,
-            published: "true",
-            message: body.content,
-            access_token: body.page.access_token,
-        }),
+        body: JSON.stringify(reqBody),
     });
     const data = await response.json();
     console.log(data);
@@ -33,7 +39,7 @@ export async function POST(request: Request) {
     }
     console.log(body);
     // const url = `${META_API_URL}/${body.pageID}/feed?access_token=${body.page.accessToken}&message=${body.content}&link=${body.link}&published=false&scheduled_publish_time=${body.scheduledPublishTime}`;
-    const url = `${META_API_URL}/${body.page.id}/feed?access_token=${body.page.access_token}&message=${body.content}&link=${body.link || ""}`;
+    const url = `${META_API_URL}/${body.page.id}/feed?access_token=${body.page.access_token}&message=${body.content}&link=${body.link || ""}&published=false&scheduled_publish_time=${body.unixTimestamp}`;
     const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -43,6 +49,8 @@ export async function POST(request: Request) {
             access_token: body.page.accessToken,
             message: body.content,
             link: body.link || "",
+            scheduled_publish_time: body.unixTimestamp,
+            published: "false",
         }),
     });
 
