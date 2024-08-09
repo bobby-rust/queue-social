@@ -6,6 +6,7 @@ import dbConnect from "@/lib/dbConnect";
 import clientPromise from "@/lib/mongodb";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import User from "@/models/User";
+import Post from "@/models/Post";
 import { getServerSession, SessionStrategy } from "next-auth";
 import { Types } from "mongoose";
 
@@ -81,6 +82,7 @@ export const authOptions = {
                     const pages = await response.json();
 
                     const user = await User.findOne({ email: session.user.email });
+
                     await User.updateOne(
                         { _id: user._id },
                         {
@@ -101,6 +103,7 @@ export const authOptions = {
             await dbConnect();
             const user = await User.findOne({ email: token.email });
             if (user) {
+                token.user_id = user._id.toString();
                 token.first_name = user.first_name;
                 token.last_name = user.last_name;
                 token.facebook_business_accounts = user.facebook_business_accounts;
@@ -112,6 +115,7 @@ export const authOptions = {
         },
         async session({ session, token }: any) {
             if (session) {
+                session.user.id = token.user_id;
                 session.user.facebook_business_accounts = token.facebook_business_accounts;
                 session.user.credits = token.credits;
                 session.user.subscription_type = token.subscription_type;
@@ -119,6 +123,23 @@ export const authOptions = {
                 session.user.last_name = token.last_name;
                 // If I set this to "token.image", it just gets set to "token.picture" anyways ??
                 session.user.image = token.picture; // I have no idea how it gets set to "picture" instead of "image"
+
+                // Delete old posts from db
+                const now = new Date();
+                const nowUTC = new Date(
+                    now.getUTCFullYear(),
+                    now.getUTCMonth(),
+                    now.getUTCDate(),
+                    now.getUTCHours(),
+                    now.getUTCMinutes(),
+                    now.getUTCSeconds(),
+                );
+                const unixTimestampNow = nowUTC.getTime() / 1000;
+
+                await Post.deleteMany({
+                    userId: session.user.id,
+                    unixTimestamp: { $lt: unixTimestampNow },
+                });
             }
 
             return session;

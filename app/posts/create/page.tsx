@@ -17,8 +17,6 @@ const CreatePostSchema = Yup.object().shape({
 });
 
 function combineDateAndTime(day: Date, time: Date) {
-    console.log("Time received from date picker: ");
-    console.log(time);
     const year = day.getUTCFullYear();
     const month = day.getUTCMonth();
     const date = day.getUTCDate();
@@ -46,6 +44,7 @@ export default function CreatePost() {
     const { data: session }: any = useSession();
     const pages = session?.user?.facebook_business_accounts.pages;
     const router = useRouter();
+    if (!pages) router.push("/account-connect");
     console.log(pages);
 
     const createPost = async (post: any) => {
@@ -53,21 +52,30 @@ export default function CreatePost() {
             alert("Please select a page to post to");
             return;
         }
-        // console.log(post);
-        for (const page of pages.data) {
-            if (page.name === post.page) {
-                post.page = page;
-            }
+        const selectedPage = pages.data.find((page: any) => page.name === post.page);
+
+        if (!selectedPage) {
+            alert("Selected page not found");
+            return;
         }
-        console.log(post.date.getDate().toLocaleString());
-        console.log(
-            `${post.time.getHours().toLocaleString()}:${post.time.getMinutes().toLocaleString()}:${post.time.getSeconds().toLocaleString()}`,
-        );
+        post.page = selectedPage;
+
+        // const hours = post.time.getHours().toLocaleString();
+        // const minutes = post.time.getMinutes().toLocaleString();
+        // const seconds = post.time.getSeconds().toLocaleString();
+        // console.log("Got date and time from date picker: ", post.date.getDate().toLocaleString());
+        // console.log(
+        //     `${hours < 10 ? "0" + hours : hours}:${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`,
+        // );
+
         const date = combineDateAndTime(post.date, post.time);
-        console.log("UTC date: ", date.toUTCString());
-        console.log("Local date: ", date.toLocaleString());
+
+        // console.log("Combined UTC date: ", date.toUTCString());
+        // console.log("Combined Local date: ", date.toLocaleString());
+
         const unixTimestamp = Math.floor(date.getTime() / 1000);
         post.unixTimestamp = unixTimestamp;
+
         console.log(unixTimestamp);
         console.log(new Date(unixTimestamp * 1000).toString());
 
@@ -80,22 +88,34 @@ export default function CreatePost() {
             now.getUTCMinutes(),
             now.getUTCSeconds(),
         );
-        const diff = date.getTime() - nowUTC;
-        console.log(diff / 60000);
-        if (diff / 60000 < 15) {
+
+        const diff = (date.getTime() - nowUTC) / 60000;
+        if (diff < 15) {
             alert("Please choose a time at least 15 minutes in the future.");
             return;
         }
-        const res = await fetch("/api/users/1/posts", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(post),
-        });
-        const data = await res.json();
-        console.log(data);
-        router.push("/");
+
+        try {
+            const res = await fetch(`/api/users/${session.user.id}/posts`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(post),
+            });
+
+            const data = await res.json();
+
+            if (data.error) {
+                console.log(data);
+                return;
+            }
+
+            console.log(data);
+            router.push("/");
+        } catch (e) {
+            console.log(e);
+        }
     };
 
     return (
