@@ -22,12 +22,18 @@ export default async function Home() {
     );
     console.log(posts.length);
     return (
-        <div className="flex flex-col justify-center items-center gap-8 min-h-[70vh] p-8">
-            <h1 className="text-3xl font-semibold">Upcoming Posts</h1>
+        <div className="flex flex-col justify-center items-center min-h-[60vh] gap-8 p-8">
             {posts.length > 0 ? (
-                posts.map((post: any) => {
-                    return <Post key={post._id} post={post} />;
-                })
+                <div>
+                    <h1 className="text-3xl font-semibold">Upcoming Posts</h1>
+                    <button className="btn btn-primary w-48">
+                        <Plus />
+                        Create Post
+                    </button>
+                    {posts.map((post: any) => {
+                        return <Post key={post._id} post={post} />;
+                    })}
+                </div>
             ) : (
                 <>
                     <h1 className="flex gap-2 text-xl">

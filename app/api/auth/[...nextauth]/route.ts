@@ -126,20 +126,27 @@ export const authOptions = {
 
                 // Delete old posts from db
                 const now = new Date();
-                const nowUTC = new Date(
-                    now.getUTCFullYear(),
-                    now.getUTCMonth(),
-                    now.getUTCDate(),
-                    now.getUTCHours(),
-                    now.getUTCMinutes(),
-                    now.getUTCSeconds(),
-                );
-                const unixTimestampNow = nowUTC.getTime() / 1000;
+                const unixTimestampNow = Math.floor(now.getTime() / 1000);
+                // const unixTimestamp = Math.floor(date.getTime() / 1000);
+                // post.unixTimestamp = unixTimestamp;
 
-                await Post.deleteMany({
-                    userId: session.user.id,
-                    unixTimestamp: { $lt: unixTimestampNow },
-                });
+                // console.log(unixTimestamp);
+                // console.log(new Date(unixTimestamp * 1000).toString());
+                console.log("Now : ", unixTimestampNow);
+                const posts = await Post.find({ userId: session.user.id });
+
+                for (const post of posts) {
+                    if (post.unixTimestamp < unixTimestampNow) {
+                        console.log("Deleting post scheduled for time ", post.unixTimestamp);
+                        await Post.deleteOne({ _id: post._id });
+                    }
+                }
+
+                // const result = await Post.deleteMany({
+                //     userId: session.user.id,
+                //     unixTimestamp: { $lt: unixTimestampNow },
+                // });
+                // console.log("Deleted old posts: ", result);
             }
 
             return session;

@@ -12,13 +12,6 @@ import { ourFileRouter } from "@/app/api/uploadthing/core";
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import LocalizationProvider from "@/app/components/LocalizationProvider";
 
-// function App({ children }) {
-//   return (
-//     <LocalizationProvider dateAdapter={AdapterDayjs}>
-//       {children}
-//     </LocalizationProvider>
-//   );
-// }
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -35,18 +28,20 @@ export default async function RootLayout({
     return (
         <html lang="en">
             <body className={`${inter.className}`}>
-                <div className="flex min-h-screen">
+                <div className="">
                     <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
-                    {session && <NavMenu />}
-                    <div className="flex-1 flex flex-col">
-                        <Header />
-                        <main className="flex-1 overflow-y-auto">
-                            <SessionProvider session={session}>
-                                <LocalizationProvider>{children}</LocalizationProvider>
-                            </SessionProvider>
-                        </main>
-                        <Footer session={session} />
-                    </div>
+                    <NavMenu>
+                        <div>
+                            <div className="flex flex-col min-h-[100vh]">
+                                <main className="">
+                                    <SessionProvider session={session}>
+                                        <LocalizationProvider>{children}</LocalizationProvider>
+                                    </SessionProvider>
+                                </main>
+                                <Footer session={session} />
+                            </div>
+                        </div>
+                    </NavMenu>
                 </div>
             </body>
         </html>

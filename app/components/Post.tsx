@@ -28,16 +28,18 @@ const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", 
 const Post = (props: PostProps) => {
     const date = new Date(props.post.unixTimestamp * 1000);
     return (
-        <div className="flex flex-col gap-4 shadow-lg p-6 border-2 rounded-md w-[50vw]">
+        <div className="flex flex-col gap-4 shadow-lg p-6 border-2 rounded-lg w-[50vw]">
             <p className="flex items-center gap-4">
                 <FaFacebook size={50} />
                 {props.post.pageName}
             </p>
             <p>{props.post.content}</p>
             <p>{props.post.link}</p>
-            {props.post.image && (
-                <Image src={props.post.image} alt="post image" width={200} height={200} />
-            )}{" "}
+            <div className="flex justify-center items-center">
+                {props.post.image && (
+                    <Image src={props.post.image} alt="post image" width={400} height={400} />
+                )}
+            </div>
             <div className="flex justify-between items-center">
                 <p>{days[date.getDay()] + ", " + date.toLocaleString()}</p>
                 <div className="flex gap-4">
