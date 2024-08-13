@@ -7,6 +7,8 @@ import clientPromise from "@/lib/mongodb";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import User from "@/models/User";
 import Post from "@/models/Post";
+import FacebookPage from "@/models/FacebookPage";
+import InstagramPage from "@/models/InstagramPage";
 import { getServerSession, SessionStrategy } from "next-auth";
 import { Types } from "mongoose";
 
@@ -25,7 +27,6 @@ export const authOptions = {
                 password: user.password,
                 first_name: user.name.split(" ")[0] || "",
                 last_name: user.name.split(" ")[1] || "",
-                facebook_business_accounts: [],
                 credits: 5,
                 subscription_type: null,
                 emailVerified: user.emailVerified,
@@ -66,8 +67,8 @@ export const authOptions = {
     callbacks: {
         async signIn(request: any) {
             await dbConnect();
-            console.log("Sign in request received: ", request);
             if (request.account.provider === "facebook_business") {
+                console.log("Sign in request from facebook: ", request);
                 const session = await getServerSession(authOptions);
                 if (session) {
                     /**
@@ -76,21 +77,49 @@ export const authOptions = {
                      * link new fb business account to user by adding their facebook account to their user object
                      * update user object in db with new fb business account
                      */
-                    const getPagesUrl = `https://graph.facebook.com/v20.0/me/accounts?access_token=${request.account.access_token}`;
-
-                    const response = await fetch(getPagesUrl);
+                    const getFbPagesUrl = `https://graph.facebook.com/v20.0/me/accounts?access_token=${request.account.access_token}`;
+                    const response = await fetch(getFbPagesUrl);
                     const pages = await response.json();
+                    const fbPages = [];
+                    for (const page of pages.data) {
+                        console.log("Page name: ", page.name);
+                        const newFbPage = {
+                            pageId: page.id,
+                            userId: session.user.id,
+                            name: page.name,
+                            accessToken: page.access_token,
+                        };
+                        fbPages.push(newFbPage);
+                        await FacebookPage.create(newFbPage);
+                    }
+                    console.log("Fb pages: ", fbPages);
+                    for (const fbPage of fbPages) {
+                        console.log("Access token: ", fbPage.accessToken);
+                        const igResponse = await fetch(
+                            `https://graph.facebook.com/v20.0/me?fields=instagram_business_account&access_token=${fbPage.accessToken}`,
+                        );
 
-                    const user = await User.findOne({ email: session.user.email });
-
-                    await User.updateOne(
-                        { _id: user._id },
-                        {
-                            $set: {
-                                facebook_business_accounts: { ...request.account, pages: pages },
-                            },
-                        },
-                    );
+                        console.log("sent req: ", igResponse);
+                        const igJson = await igResponse.json();
+                        console.log("IG response: ", igJson);
+                        if (igJson.instagram_business_account) {
+                            const newIgPage = {
+                                fbPageId: igJson.id, // facebook page ID, NOT the MongoDB ID
+                                pageId: igJson.instagram_business_account.id,
+                                userId: session.user.id,
+                                accessToken: request.account.access_token,
+                            };
+                            await InstagramPage.create(newIgPage);
+                        }
+                    }
+                    // await User.updateOne(
+                    //     { _id: user._id },
+                    //     {
+                    //         $set: {
+                    //             facebook_business_accounts: { ...request.account, pages: pages },
+                    //         },
+                    //     },
+                    // );
                 }
             }
 
@@ -106,7 +135,6 @@ export const authOptions = {
                 token.user_id = user._id.toString();
                 token.first_name = user.first_name;
                 token.last_name = user.last_name;
-                token.facebook_business_accounts = user.facebook_business_accounts;
                 token.credits = user.credits;
                 token.subscription_type = user.subscription_type;
                 // token.image = user.image;
@@ -116,7 +144,6 @@ export const authOptions = {
         async session({ session, token }: any) {
             if (session) {
                 session.user.id = token.user_id;
-                session.user.facebook_business_accounts = token.facebook_business_accounts;
                 session.user.credits = token.credits;
                 session.user.subscription_type = token.subscription_type;
                 session.user.first_name = token.first_name;
@@ -132,7 +159,6 @@ export const authOptions = {
 
                 // console.log(unixTimestamp);
                 // console.log(new Date(unixTimestamp * 1000).toString());
-                console.log("Now : ", unixTimestampNow);
                 const posts = await Post.find({ userId: session.user.id });
 
                 for (const post of posts) {

@@ -4,11 +4,11 @@ import Post from "@/models/Post";
 
 const META_API_URL = "https://graph.facebook.com/v20.0";
 
-const postWithImage = async (body: any, id: string) => {
-    const url = `${META_API_URL}/${body.page.id}/photos?access_token=${body.page.access_token}&url=${body.image.fileUrl}&message=${body.content}&link=${body.link || ""}&scheduled_publish_time=${body.unixTimestamp}&published=false`;
+const postToMeta = async (body: any) => {
+    const url = `${META_API_URL}/${body.page.id}/${body.image ? "photos" : "feed"}?access_token=${body.page.access_token}&url=${body.image.fileUrl || ""}&message=${body.content}&link=${body.link || ""}&scheduled_publish_time=${body.unixTimestamp}&published=false`;
+    // Uncomment the following line for immediate publish
     // const url = `${META_API_URL}/${body.page.id}/photos?access_token=${body.page.access_token}&url=${body.image.fileUrl}&message=${body.content}&link=${body.link || ""}&published=true`;
     const reqBody: any = {
-        url: body.image.fileUrl,
         published: "false",
         message: body.content,
         access_token: body.page.access_token,
@@ -18,6 +18,10 @@ const postWithImage = async (body: any, id: string) => {
     if (body.link !== "") {
         reqBody.link = body.link;
     }
+    if (body.image) {
+        reqBody.url = body.image.fileUrl;
+    }
+
     const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -27,67 +31,65 @@ const postWithImage = async (body: any, id: string) => {
         body: JSON.stringify(reqBody),
     });
     const data = await response.json();
-    console.log(data);
-    // Create post object in DB
-    const post = new Post({
-        userId: id,
-        pageId: body.page.id,
-        pageName: body.page.name,
-        content: body.content,
-        link: body.link || "",
-        image: body.image.fileUrl || null,
-        unixTimestamp: body.unixTimestamp,
-    });
-    // await dbConnect();
-    const result = await post.save();
-    console.log(result);
 
-    // Image file is no longer needed, hosted on FB servers ? I think ?
-    // await utapi.deleteFiles(body.image.fileId);
-
-    return new Response(JSON.stringify(response));
+    return data;
 };
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
-    const body = await request.json();
-    if (body.image) {
-        const data = postWithImage(body, params.id);
-        return data;
+const postToInstagram = async (body: any) => {
+    if (!body.instagramAccountId) {
+        console.log("Missing instagram account ID");
+        return { success: false, message: "Missing instagram account ID" };
     }
-    console.log(body);
-    const url = `${META_API_URL}/${body.page.id}/feed?access_token=${body.page.access_token}&message=${body.content}&link=${body.link || ""}&published=false&scheduled_publish_time=${body.unixTimestamp}`;
-    // const url = `${META_API_URL}/${body.page.id}/feed?access_token=${body.page.access_token}&message=${body.content}&link=${body.link || ""}&published=true`;
+    // const appAccessToken = await getAppAccessToken();
+
+    console.log("Got body in post to IG func: ", body);
+    const url = `https://graph.facebook.com/v20.0/${body.instagramAccountId}/media?image_url=${body.image.fileUrl}&caption=${body.content}&access_token=${body.userAccessToken}`;
     const response = await fetch(url, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            access_token: body.page.accessToken,
-            message: body.content,
-            link: body.link || "",
-            scheduled_publish_time: body.unixTimestamp,
-            published: "false",
+            access_token: body.userAccessToken,
+            image_url: body.image.fileUrl,
+            caption: body.content,
         }),
     });
 
-    const data = await response.json();
-    console.log(data);
+    const createContainerJson = await response.json();
+    console.log("Result of instagram create container: ", createContainerJson);
 
-    // Create post object in Db
-    const post = new Post({
-        userId: params.id,
-        pageId: body.page.id,
-        pageName: body.page.name,
-        content: body.content,
-        link: body.link || "",
-        image: body.image || null,
-        unixTimestamp: body.unixTimestamp,
+    const containerId = createContainerJson.id;
+
+    const publishUrl = `https://graph.facebook.com/v20.0/${body.instagramAccountId}/media_publish?creation_id=${containerId}&access_token=${body.userAccessToken}`;
+    const publishResponse = await fetch(publishUrl, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            access_token: body.userAccessToken,
+            creation_id: containerId,
+        }),
     });
+    const publishData = await publishResponse.json();
+    return publishData;
+};
 
-    // await dbConnect();
-    await post.save();
-    return new Response(JSON.stringify(data));
+export async function POST(request: Request, { params }: { params: { id: string } }) {
+    const body = await request.json();
+    const funcs = new Map([
+        ["facebook", postToMeta],
+        ["instagram", postToInstagram],
+    ]);
+    let responses = { data: [] };
+    for (const social of body.socials) {
+        const response = await funcs.get(social)(body);
+        console.log("Result of posting to ", social, ": ", response);
+        responses.data.push(response);
+    }
+
+    return new Response(JSON.stringify(responses));
 }
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {

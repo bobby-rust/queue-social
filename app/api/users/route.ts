@@ -6,22 +6,13 @@ export async function POST(req: Request) {
         await dbConnect();
         const body = await req.json();
 
-        const {
-            firstName,
-            lastName,
-            email,
-            password,
-            facebookBusinessAccounts,
-            credits,
-            subscriptionType,
-        } = body;
+        const { firstName, lastName, email, password, credits, subscriptionType } = body;
 
         const newUser = new User({
             first_name: firstName,
             last_name: lastName,
             email: email,
             password: password,
-            facebook_business_accounts: facebookBusinessAccounts,
             credits: credits,
             subscription_type: subscriptionType,
         });

@@ -20,7 +20,6 @@ export default async function Home() {
     const posts = (await getPosts(session.user.id)).sort(
         (a: any, b: any) => a.unixTimestamp - b.unixTimestamp,
     );
-    console.log(posts.length);
     return (
         <div className="flex flex-col justify-center items-center min-h-[60vh] gap-8 p-8">
             {posts.length > 0 ? (

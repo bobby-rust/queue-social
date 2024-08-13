@@ -1,15 +1,18 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
-import { Link } from "lucide-react";
+import { Check, Link, Plus } from "lucide-react";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { UploadDropzone } from "@/utils/uploadthing";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
+import getPages from "@/lib/getPages";
 
 const CreatePostSchema = Yup.object().shape({
+    socials: Yup.array().required("Socials are required"),
     content: Yup.string().required("Content is required"),
     image: Yup.mixed(),
     link: Yup.string().url("Invalid URL format"),
@@ -30,7 +33,10 @@ function combineDateAndTime(day: Date, time: Date) {
     return combinedDate;
 }
 
+const availableSocials = ["Facebook", "Instagram"];
+
 interface Post {
+    socials: any;
     content: string;
     image: any;
     link: string;
@@ -42,17 +48,17 @@ interface Post {
 
 export default function CreatePost() {
     const { data: session }: any = useSession();
-    const pages = session?.user?.facebook_business_accounts.pages;
+    const pages = getPages(session.user?.id);
+    console.log("PAGES: ", pages);
     const router = useRouter();
     if (!pages) router.push("/account-connect");
-    console.log(pages);
 
     const createPost = async (post: any) => {
         if (post.page === "default") {
             alert("Please select a page to post to");
             return;
         }
-        const selectedPage = pages.data.find((page: any) => page.name === post.page);
+        const selectedPage = pages.find((page: any) => page.name === post.page);
 
         if (!selectedPage) {
             alert("Selected page not found");
@@ -60,24 +66,17 @@ export default function CreatePost() {
         }
         post.page = selectedPage;
 
-        // const hours = post.time.getHours().toLocaleString();
-        // const minutes = post.time.getMinutes().toLocaleString();
-        // const seconds = post.time.getSeconds().toLocaleString();
-        // console.log("Got date and time from date picker: ", post.date.getDate().toLocaleString());
-        // console.log(
-        //     `${hours < 10 ? "0" + hours : hours}:${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`,
-        // );
+        if (post.socials.includes("instagram")) {
+            if (!post.image) {
+                alert("Instagram posts require at least one image.");
+                return;
+            }
+        }
 
         const date = combineDateAndTime(post.date, post.time);
 
-        // console.log("Combined UTC date: ", date.toUTCString());
-        // console.log("Combined Local date: ", date.toLocaleString());
-
         const unixTimestamp = Math.floor(date.getTime() / 1000);
         post.unixTimestamp = unixTimestamp;
-
-        console.log(unixTimestamp);
-        console.log(new Date(unixTimestamp * 1000).toString());
 
         const now = new Date();
         const nowUTC = Date.UTC(
@@ -95,13 +94,22 @@ export default function CreatePost() {
             return;
         }
 
+        const body = {
+            socials: post.socials,
+            content: post.content,
+            image: post.image,
+            link: post.link,
+            page: post.page,
+            unixTimestamp: unixTimestamp,
+        };
+
         try {
             const res = await fetch(`/api/users/${session.user.id}/posts`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(post),
+                body: JSON.stringify(body),
             });
 
             const data = await res.json();
@@ -111,10 +119,20 @@ export default function CreatePost() {
                 return;
             }
 
-            console.log(data);
             router.push("/");
         } catch (e) {
             console.log(e);
+        }
+    };
+
+    const handleToggleSocial = (socials: string[], social: string, func: any) => {
+        if (socials.includes(social.toLowerCase())) {
+            func(
+                "socials",
+                socials.filter((s) => s !== social.toLowerCase()),
+            );
+        } else {
+            func("socials", [...socials, social.toLowerCase()]);
         }
     };
 
@@ -124,6 +142,7 @@ export default function CreatePost() {
                 <h1 className="text-3xl bold">Create Post</h1>
                 <Formik
                     initialValues={{
+                        socials: [],
                         content: "",
                         image: "",
                         link: "",
@@ -133,14 +152,55 @@ export default function CreatePost() {
                     }}
                     validationSchema={CreatePostSchema}
                     onSubmit={(values, { setSubmitting, resetForm }) => {
+                        console.log("Submitting form: ", values);
                         createPost(values);
                         setSubmitting(false);
                         resetForm();
                     }}
                 >
-                    {({ handleSubmit, values, setFieldValue, errors, touched }) => (
+                    {({ values, setFieldValue, errors, touched }) => (
                         <Form className="flex flex-col gap-4 w-full">
                             <div className="form-control w-full min-h-80">
+                                <div>
+                                    <label className="label">
+                                        <span className="label-text">Socials</span>
+                                    </label>
+                                    <div className="flex gap-4">
+                                        {availableSocials.map((social) => (
+                                            <button
+                                                type="button"
+                                                className="btn btn-ghost h-16 w-16 p-2"
+                                                onClick={() =>
+                                                    handleToggleSocial(
+                                                        values.socials,
+                                                        social,
+                                                        setFieldValue,
+                                                    )
+                                                }
+                                            >
+                                                <div className="indicator">
+                                                    <Image
+                                                        src={`/${social.toLowerCase()}_icon.png`}
+                                                        alt={social}
+                                                        width={50}
+                                                        height={50}
+                                                    />
+                                                    <span
+                                                        className={`badge p-[1px] badge-md ${values.socials.includes(social.toLowerCase()) ? "bg-green-400" : "badge-primary"} indicator-item h-6 w-6`}
+                                                    >
+                                                        {values.socials.includes(
+                                                            social.toLowerCase(),
+                                                        ) ? (
+                                                            <Check size={24} />
+                                                        ) : (
+                                                            <Plus size={24} />
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
                                 {errors.content && touched.content ? (
                                     <div
                                         className="tooltip tooltip-right tooltip-error tooltip-open w-full"
@@ -238,7 +298,6 @@ export default function CreatePost() {
                                         <UploadDropzone
                                             endpoint="imageUploader"
                                             onClientUploadComplete={(res: any) => {
-                                                console.log("Files: ", res);
                                                 setFieldValue("image", {
                                                     fileUrl: res[0].serverData.fileUrl,
                                                     fileId: res[0].serverData.fileId,
@@ -270,13 +329,11 @@ export default function CreatePost() {
                             <DatePicker
                                 onChange={(date) => {
                                     setFieldValue("date", date?.toDate());
-                                    console.log(values.date);
                                 }}
                             />
                             <TimePicker
                                 onChange={(time) => {
                                     setFieldValue("time", time?.toDate());
-                                    console.log(values.time);
                                 }}
                             />
                             <button type="submit" className="btn btn-primary w-1/5">

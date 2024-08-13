@@ -50,12 +50,10 @@ export default function Register() {
         });
 
         const data = await response.json();
-        console.log(data);
         await signIn("credentials", {
             email: user.email,
             password: user.password,
         });
-        console.log("Sign up successful. Redirecting to home.");
         router.push("/");
     };
     return (
