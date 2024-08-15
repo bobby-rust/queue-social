@@ -1,11 +1,7 @@
 "use server";
-const getPages = (user_id: string) => {
-    const fetchPages = async () => {
-        const response = await fetch(`/api/users/${user_id}/pages`);
-        const pages = await response.json();
-        return pages;
-    };
-    const pages = fetchPages();
+const getPages = async (user_id: string) => {
+    const response = await fetch(`http://localhost:3000/api/users/${user_id}/pages`);
+    const pages = await response.json();
     return pages;
 };
 

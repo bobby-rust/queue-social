@@ -1,22 +1,58 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
-import { Check, Link, Plus } from "lucide-react";
+import { Link } from "lucide-react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { UploadDropzone } from "@/utils/uploadthing";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 import getPages from "@/lib/getPages";
+import PageSelect from "./PageSelect";
+import type { XPage } from "@/models/XPage";
+import type { FacebookPage } from "@/models/FacebookPage";
+import type { InstagramPage } from "@/models/InstagramPage";
+
+export interface SchedulePostRequest {
+    content: string;
+    image: { fileUrl: string; fileId: string };
+    link: string;
+    fbPages: FacebookPage[];
+    igPages: InstagramPage[];
+    xPages: XPage[];
+    unixTimestamp: number;
+}
+
+interface SchedulePostForm {
+    content: string;
+    image: { fileUrl: string; fileId: string };
+    link: string;
+    fbPages: string[];
+    igPages: string[];
+    xPages: string[];
+    date: Date;
+    time: Date;
+    unixTimestamp: number;
+}
+
+interface Pages {
+    fbPages: any;
+    igPages: any;
+    xPages: any;
+}
 
 const CreatePostSchema = Yup.object().shape({
-    socials: Yup.array().required("Socials are required"),
     content: Yup.string().required("Content is required"),
+    date: Yup.date().required("Date is required"),
+    time: Yup.date().required("Time is required"),
     image: Yup.mixed(),
     link: Yup.string().url("Invalid URL format"),
-    page: Yup.string().required("Page is required"),
+    fbPages: Yup.array(),
+    igPages: Yup.array(),
+    xPages: Yup.array(),
+    unixTimestamp: Yup.number(),
 });
 
 function combineDateAndTime(day: Date, time: Date) {
@@ -33,75 +69,65 @@ function combineDateAndTime(day: Date, time: Date) {
     return combinedDate;
 }
 
-const availableSocials = ["Facebook", "Instagram"];
-
-interface Post {
-    socials: any;
-    content: string;
-    image: any;
-    link: string;
-    page: any;
-    date: Date;
-    time: Date;
-    unixTimestamp: number;
+function checkTime(time: Date) {
+    const now = new Date();
+    const nowUTC = Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate(),
+        now.getUTCHours(),
+        now.getUTCMinutes(),
+        now.getUTCSeconds(),
+    );
+    const diff = (time.getTime() - nowUTC) / 60000;
+    return diff >= 15;
 }
 
 export default function CreatePost() {
     const { data: session }: any = useSession();
-    const pages = getPages(session.user?.id);
-    console.log("PAGES: ", pages);
+    const [pages, setPages] = useState<Pages>({
+        fbPages: [],
+        igPages: [],
+        xPages: [],
+    });
+
     const router = useRouter();
-    if (!pages) router.push("/account-connect");
+    if (!pages) router.push("/connect");
 
-    const createPost = async (post: any) => {
-        if (post.page === "default") {
-            alert("Please select a page to post to");
-            return;
+    function findPagesFromNames(social: string, pagesNames: string[]) {
+        switch (social) {
+            case "facebook":
+                return pages.fbPages.filter((page: any) => pagesNames.includes(page.name));
+            case "instagram":
+                return pages.igPages.filter((page: any) => pagesNames.includes(page.name));
+            case "x":
+                return pages.xPages.filter((page: any) => pagesNames.includes(page.name));
+            default:
+                return [];
         }
-        const selectedPage = pages.find((page: any) => page.name === post.page);
+    }
 
-        if (!selectedPage) {
-            alert("Selected page not found");
-            return;
-        }
-        post.page = selectedPage;
-
-        if (post.socials.includes("instagram")) {
-            if (!post.image) {
-                alert("Instagram posts require at least one image.");
-                return;
-            }
-        }
-
-        const date = combineDateAndTime(post.date, post.time);
-
-        const unixTimestamp = Math.floor(date.getTime() / 1000);
-        post.unixTimestamp = unixTimestamp;
-
-        const now = new Date();
-        const nowUTC = Date.UTC(
-            now.getUTCFullYear(),
-            now.getUTCMonth(),
-            now.getUTCDate(),
-            now.getUTCHours(),
-            now.getUTCMinutes(),
-            now.getUTCSeconds(),
-        );
-
-        const diff = (date.getTime() - nowUTC) / 60000;
-        if (diff < 15) {
-            alert("Please choose a time at least 15 minutes in the future.");
-            return;
-        }
-
-        const body = {
-            socials: post.socials,
+    const submitPost = async (post: SchedulePostForm) => {
+        const schedulePostRequest: SchedulePostRequest = {
             content: post.content,
             image: post.image,
             link: post.link,
-            page: post.page,
-            unixTimestamp: unixTimestamp,
+            fbPages: findPagesFromNames("facebook", post.fbPages), // Convert page names to page objects
+            igPages: findPagesFromNames("instagram", post.igPages),
+            xPages: findPagesFromNames("x", post.xPages),
+            unixTimestamp: post.unixTimestamp,
         };
+
+        // Convert date and time to combined unix timestamp
+        const date = combineDateAndTime(post.date, post.time);
+        const unixTimestamp = Math.floor(date.getTime() / 1000);
+        schedulePostRequest.unixTimestamp = unixTimestamp;
+
+        // Check if time is at least 15 minutes in the future
+        if (checkTime(date)) {
+            alert("Please choose a time at least 15 minutes in the future.");
+            return;
+        }
 
         try {
             const res = await fetch(`/api/users/${session.user.id}/posts`, {
@@ -109,7 +135,7 @@ export default function CreatePost() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(body),
+                body: JSON.stringify(schedulePostRequest),
             });
 
             const data = await res.json();
@@ -125,82 +151,46 @@ export default function CreatePost() {
         }
     };
 
-    const handleToggleSocial = (socials: string[], social: string, func: any) => {
-        if (socials.includes(social.toLowerCase())) {
-            func(
-                "socials",
-                socials.filter((s) => s !== social.toLowerCase()),
-            );
-        } else {
-            func("socials", [...socials, social.toLowerCase()]);
+    useEffect(() => {
+        async function fetchPages() {
+            const pages = await getPages(session.user?.id);
+            setPages(pages);
         }
-    };
+
+        fetchPages();
+    }, []);
+
+    useEffect(() => {
+        console.log("PAGES: ", pages);
+    }, [pages]);
 
     return (
         <div className="flex flex-col items-center min-h-[70vh] p-16">
             <div className="flex flex-col gap-4 justify-center items-center bg-base-200 p-12 rounded-lg shadow-lg w-3/5">
                 <h1 className="text-3xl bold">Create Post</h1>
-                <Formik
+                <Formik<SchedulePostForm>
                     initialValues={{
-                        socials: [],
                         content: "",
-                        image: "",
+                        image: { fileUrl: "", fileId: "" },
                         link: "",
-                        page: "default",
+                        fbPages: [],
+                        igPages: [],
+                        xPages: [],
                         date: new Date(),
                         time: new Date(),
+                        unixTimestamp: 0,
                     }}
                     validationSchema={CreatePostSchema}
                     onSubmit={(values, { setSubmitting, resetForm }) => {
                         console.log("Submitting form: ", values);
-                        createPost(values);
+                        submitPost(values);
                         setSubmitting(false);
                         resetForm();
                     }}
                 >
-                    {({ values, setFieldValue, errors, touched }) => (
+                    {({ setFieldValue, errors, touched }) => (
                         <Form className="flex flex-col gap-4 w-full">
                             <div className="form-control w-full min-h-80">
-                                <div>
-                                    <label className="label">
-                                        <span className="label-text">Socials</span>
-                                    </label>
-                                    <div className="flex gap-4">
-                                        {availableSocials.map((social) => (
-                                            <button
-                                                type="button"
-                                                className="btn btn-ghost h-16 w-16 p-2"
-                                                onClick={() =>
-                                                    handleToggleSocial(
-                                                        values.socials,
-                                                        social,
-                                                        setFieldValue,
-                                                    )
-                                                }
-                                            >
-                                                <div className="indicator">
-                                                    <Image
-                                                        src={`/${social.toLowerCase()}_icon.png`}
-                                                        alt={social}
-                                                        width={50}
-                                                        height={50}
-                                                    />
-                                                    <span
-                                                        className={`badge p-[1px] badge-md ${values.socials.includes(social.toLowerCase()) ? "bg-green-400" : "badge-primary"} indicator-item h-6 w-6`}
-                                                    >
-                                                        {values.socials.includes(
-                                                            social.toLowerCase(),
-                                                        ) ? (
-                                                            <Check size={24} />
-                                                        ) : (
-                                                            <Plus size={24} />
-                                                        )}
-                                                    </span>
-                                                </div>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
                                 {errors.content && touched.content ? (
                                     <div
                                         className="tooltip tooltip-right tooltip-error tooltip-open w-full"
@@ -312,20 +302,36 @@ export default function CreatePost() {
                                     </div>
                                 )}
                             </div>
-                            <Field
-                                as="select"
-                                component="select"
-                                name="page"
-                                id="page"
-                                className="select select-bordered w-full max-w-xs"
-                            >
-                                <option value="default" disabled>
-                                    Which page would you like to post to?
-                                </option>
-                                {pages?.data.map((page: any) => (
-                                    <option key={page.id}>{page.name}</option>
-                                ))}
-                            </Field>
+                            <PageSelect
+                                Icon={() => (
+                                    <Image
+                                        src="/facebook_icon.png"
+                                        alt="Facebook"
+                                        width={20}
+                                        height={20}
+                                    />
+                                )}
+                                pages={pages.fbPages.map((page: any) => page.name)}
+                                setFieldValue={setFieldValue}
+                                social="Facebook"
+                                field="fbPages"
+                            />
+
+                            <PageSelect
+                                Icon={() => (
+                                    <Image
+                                        src="/instagram_icon.png"
+                                        alt="Instagram"
+                                        width={20}
+                                        height={20}
+                                    />
+                                )}
+                                pages={pages.igPages.map((page: any) => page.name)}
+                                setFieldValue={setFieldValue}
+                                social="Instagram"
+                                field="igPages"
+                            />
+
                             <DatePicker
                                 onChange={(date) => {
                                     setFieldValue("date", date?.toDate());

@@ -90,7 +90,11 @@ export const authOptions = {
                             accessToken: page.access_token,
                         };
                         fbPages.push(newFbPage);
-                        await FacebookPage.create(newFbPage);
+                        await FacebookPage.findOneAndUpdate(
+                            { pageId: page.id },
+                            { $setOnInsert: newFbPage },
+                            { new: true, upsert: true },
+                        );
                     }
                     console.log("Fb pages: ", fbPages);
                     for (const fbPage of fbPages) {
@@ -104,22 +108,19 @@ export const authOptions = {
                         console.log("IG response: ", igJson);
                         if (igJson.instagram_business_account) {
                             const newIgPage = {
-                                fbPageId: igJson.id, // facebook page ID, NOT the MongoDB ID
+                                fbPageId: fbPage.pageId, // facebook page ID, NOT the MongoDB ID
+                                name: fbPage.name,
                                 pageId: igJson.instagram_business_account.id,
                                 userId: session.user.id,
                                 accessToken: request.account.access_token,
                             };
-                            await InstagramPage.create(newIgPage);
+                            await InstagramPage.findOneAndUpdate(
+                                { pageId: igJson.instagram_business_account.id },
+                                { $setOnInsert: newIgPage },
+                                { new: true, upsert: true },
+                            );
                         }
                     }
-                    // await User.updateOne(
-                    //     { _id: user._id },
-                    //     {
-                    //         $set: {
-                    //             facebook_business_accounts: { ...request.account, pages: pages },
-                    //         },
-                    //     },
-                    // );
                 }
             }
 

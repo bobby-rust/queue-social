@@ -118,7 +118,7 @@ export default async function NavMenu({ children }: { children: React.ReactNode 
                             </li>
                             <li className="flex-1">
                                 <Link
-                                    href="/account-connect"
+                                    href="/connect"
                                     className="btn btn-ghost w-full justify-start"
                                 >
                                     <AtSign />

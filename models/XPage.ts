@@ -1,21 +1,19 @@
 import mongoose from "mongoose";
 
-interface InstagramPage {
+interface XPage {
     pageId: string;
-    fbPageId: string;
     name: string;
     userId: string;
     accessToken: string;
 }
 
-const instagramPageSchema = new mongoose.Schema<InstagramPage>({
+const xPageSchema = new mongoose.Schema<XPage>({
     pageId: { type: String, required: true, unique: true },
-    fbPageId: { type: String, required: true },
     name: { type: String, required: true },
     userId: { type: String, required: true },
     accessToken: { type: String, required: true },
 });
 
-export default mongoose.models.InstagramPage ||
-    mongoose.model<InstagramPage>("InstagramPage", instagramPageSchema);
-export type { InstagramPage };
+export default mongoose.models.XPage || mongoose.model<XPage>("XPage", xPageSchema);
+
+export type { XPage };

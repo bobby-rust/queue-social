@@ -43,7 +43,7 @@ export default async function Home() {
                         <Link href="/posts/create" className="btn btn-primary w-48">
                             <Plus /> Create Post
                         </Link>
-                        <Link href="/account-connect" className="btn btn-outline w-48">
+                        <Link href="/connect" className="btn btn-outline w-48">
                             <Plug /> Connect Accounts
                         </Link>
                     </div>
