@@ -79,7 +79,11 @@ function checkTime(time: Date) {
         now.getUTCMinutes(),
         now.getUTCSeconds(),
     );
+
+    console.log("nowUTC: ", nowUTC);
+    console.log("time.getTime(): ", time.getTime());
     const diff = (time.getTime() - nowUTC) / 60000;
+    console.log("diff: ", diff);
     return diff >= 15;
 }
 
@@ -124,7 +128,7 @@ export default function CreatePost() {
         schedulePostRequest.unixTimestamp = unixTimestamp;
 
         // Check if time is at least 15 minutes in the future
-        if (checkTime(date)) {
+        if (!checkTime(date)) {
             alert("Please choose a time at least 15 minutes in the future.");
             return;
         }

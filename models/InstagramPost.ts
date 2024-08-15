@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { InstagramPage } from "./InstagramPage";
 
 export interface IInstagramPost extends mongoose.Document {
+    userId: string;
     postId: string;
     content: string;
     image: { fileUrl: string; fileId: string };
@@ -11,6 +12,7 @@ export interface IInstagramPost extends mongoose.Document {
 }
 
 export const instagramPostSchema = new mongoose.Schema<IInstagramPost>({
+    userId: { type: String, required: true },
     postId: { type: String },
     content: { type: String },
     image: { fileUrl: { type: String }, fileId: { type: String } },

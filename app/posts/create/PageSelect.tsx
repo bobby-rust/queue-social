@@ -11,8 +11,6 @@ interface PageSelectProps {
 }
 
 const PageSelect = ({ Icon, pages, setFieldValue, social, field }: PageSelectProps) => {
-    console.log("Page select component got pages: ", pages);
-
     return (
         <Select.Root
             positioning={{ sameWidth: true }}
@@ -26,10 +24,10 @@ const PageSelect = ({ Icon, pages, setFieldValue, social, field }: PageSelectPro
                 <Icon />
                 <Select.Label>{`${social} Pages`}</Select.Label>
             </div>
-            <Select.Control className="bg-white border-gray-200 border-[1px] rounded-lg w-full">
+            <Select.Control className="bg-white border-gray-200 border-[1px] px-2 rounded-lg w-full">
                 <Select.Trigger>
                     <Select.ValueText
-                        className="p-2 whitespace-nowrap overflow-hidden text-ellipsis"
+                        className="whitespace-nowrap overflow-hidden text-ellipsis"
                         placeholder={`Select ${social} Pages`}
                     />
                     <ChevronsUpDownIcon />

@@ -1,12 +1,11 @@
 // import { utapi } from "@/app/api/uploadthing/core";
 
 import type { IFacebookPost } from "@/models/FacebookPost";
-import FacebookPost from "@/models/FacebookPost";
 import type { IInstagramPost } from "@/models/InstagramPost";
+import type { SchedulePostRequest } from "@/app/posts/create/page";
+import FacebookPost from "@/models/FacebookPost";
 import InstagramPost from "@/models/InstagramPost";
 
-import type { SchedulePostRequest } from "@/app/posts/create/page";
-import { InstagramPage } from "@/models/InstagramPage";
 const META_API_URL = "https://graph.facebook.com/v20.0";
 
 // interface FBPost {
@@ -17,7 +16,7 @@ const META_API_URL = "https://graph.facebook.com/v20.0";
 //     unixTimestamp: number;
 // }
 
-const postToFacebook = async (post: IFacebookPost) => {
+const postToFacebook = async (userId: string, post: IFacebookPost) => {
     const url = `${META_API_URL}/${post.page.pageId}/${post.image ? "photos" : "feed"}?access_token=${post.page.accessToken}&url=${post.image.fileUrl || ""}&message=${post.content}&link=${post.link || ""}&scheduled_publish_time=${post.unixTimestamp}&published=false`;
     // Uncomment the following line for immediate publish
     // const url = `${META_API_URL}/${body.page.id}/photos?access_token=${body.page.access_token}&url=${body.image.fileUrl}&message=${body.content}&link=${body.link || ""}&published=true`;
@@ -45,6 +44,15 @@ const postToFacebook = async (post: IFacebookPost) => {
     });
     const data = await response.json();
 
+    await FacebookPost.create({
+        content: post.content,
+        image: post.image,
+        link: post.link,
+        page: post.page,
+        unixTimestamp: post.unixTimestamp,
+        userId: userId,
+    });
+
     return data;
 };
 
@@ -56,7 +64,7 @@ const postToFacebook = async (post: IFacebookPost) => {
 //     unixTimestamp: number;
 // }
 
-const postToInstagram = async (post: IInstagramPost) => {
+const postToInstagram = async (userId: string, post: IInstagramPost) => {
     if (!post.page.pageId) {
         console.log("Missing instagram account ID");
         return { success: false, message: "Missing instagram account ID" };
@@ -98,6 +106,7 @@ const postToInstagram = async (post: IInstagramPost) => {
     const publishData = await publishResponse.json();
 
     await InstagramPost.create({
+        userId: userId,
         postId: publishData.id,
         content: post.content,
         image: post.image,
@@ -109,7 +118,7 @@ const postToInstagram = async (post: IInstagramPost) => {
     return publishData;
 };
 
-const submitFacebookPosts = async (schedulePostRequest: SchedulePostRequest) => {
+const submitFacebookPosts = async (userId: string, schedulePostRequest: SchedulePostRequest) => {
     for (const page of schedulePostRequest.fbPages) {
         const fbPost = {
             content: schedulePostRequest.content,
@@ -119,8 +128,7 @@ const submitFacebookPosts = async (schedulePostRequest: SchedulePostRequest) => 
             unixTimestamp: schedulePostRequest.unixTimestamp,
         } as IFacebookPost;
 
-        const response = await postToFacebook(fbPost);
-        const json = await response.json();
+        const json = await postToFacebook(userId, fbPost);
         if (json.error) {
             console.log(json.error);
             return new Response(JSON.stringify({ error: json.error }), { status: 500 });
@@ -130,7 +138,7 @@ const submitFacebookPosts = async (schedulePostRequest: SchedulePostRequest) => 
     return new Response(JSON.stringify({ success: true }), { status: 201 });
 };
 
-const submitInstagramPosts = async (schedulePostRequest: SchedulePostRequest) => {
+const submitInstagramPosts = async (userId: string, schedulePostRequest: SchedulePostRequest) => {
     for (const page of schedulePostRequest.igPages) {
         const igPost = {
             content: schedulePostRequest.content,
@@ -139,8 +147,7 @@ const submitInstagramPosts = async (schedulePostRequest: SchedulePostRequest) =>
             page: page,
             unixTimestamp: schedulePostRequest.unixTimestamp,
         } as IInstagramPost;
-        const response = await postToInstagram(igPost);
-        const json = await response.json();
+        const json = await postToInstagram(userId, igPost);
         if (json.error) {
             console.log(json.error);
             return new Response(JSON.stringify({ error: json.error }), { status: 500 });
@@ -150,34 +157,41 @@ const submitInstagramPosts = async (schedulePostRequest: SchedulePostRequest) =>
     return new Response(JSON.stringify({ success: true }), { status: 201 });
 };
 
-export async function POST(request: Request, { params: id }: { params: { id: string } }) {
+export async function POST(request: Request, { params: params }: { params: { id: string } }) {
     const schedulePostRequest: SchedulePostRequest = await request.json();
 
     // Post to Facebook
-    const fbResponse = await submitFacebookPosts(schedulePostRequest);
+    const fbResponse = await submitFacebookPosts(params.id, schedulePostRequest);
     const fbJson = await fbResponse.json();
-    if (!fbJson.success)
+    if (!fbJson.success) {
         return new Response(
             JSON.stringify({ error: "Failed to post to facebook", details: fbJson.error }),
             { status: 500 },
         );
+    }
+
+    console.log("Posted to facebook: ", fbJson);
 
     // Post to Instagram
-    const igResponse = await submitInstagramPosts(schedulePostRequest);
+    const igResponse = await submitInstagramPosts(params.id, schedulePostRequest);
     const igJson = await igResponse.json();
-    if (!igJson.success)
+    if (!igJson.success) {
         return new Response(
             JSON.stringify({ error: "Failed to post to facebook", details: igJson.error }),
             { status: 500 },
         );
+    }
 
+    console.log("Posted to instagram: ", igJson);
     // Todo
     // Post to X
 
-    return new Response(JSON.stringify({}));
+    return new Response(JSON.stringify({ success: true, data: { fb: fbJson, ig: igJson } }), {
+        status: 201,
+    });
 }
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
-    const posts = await Post.find({ userId: params.id });
+    const posts = await FacebookPost.find({ userId: params.id });
     return new Response(JSON.stringify(posts));
 }
