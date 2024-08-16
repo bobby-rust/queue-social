@@ -1,10 +1,10 @@
 // import { utapi } from "@/app/api/uploadthing/core";
 
 import type { IFacebookPost } from "@/models/FacebookPost";
-import type { IInstagramPost } from "@/models/InstagramPost";
 import type { SchedulePostRequest } from "@/app/posts/create/page";
 import FacebookPost from "@/models/FacebookPost";
-import InstagramPost from "@/models/InstagramPost";
+import agenda from "@/lib/agenda";
+import "@/lib/jobs";
 
 const META_API_URL = "https://graph.facebook.com/v20.0";
 
@@ -64,60 +64,6 @@ const postToFacebook = async (userId: string, post: IFacebookPost) => {
 //     unixTimestamp: number;
 // }
 
-const postToInstagram = async (userId: string, post: IInstagramPost) => {
-    if (!post.page.pageId) {
-        console.log("Missing instagram account ID");
-        return { success: false, message: "Missing instagram account ID" };
-    }
-
-    console.log("Got body in post to IG func: ", post);
-    const url = `https://graph.facebook.com/v20.0/${post.page.pageId}/media?image_url=${post.image.fileUrl}&caption=${post.content}&access_token=${post.page.accessToken}`;
-    const response = await fetch(url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            access_token: post.page.accessToken,
-            image_url: post.image.fileUrl,
-            caption: post.content,
-        }),
-    });
-
-    const createContainerJson = await response.json();
-    console.log("Result of instagram create container: ", createContainerJson);
-
-    const containerId = createContainerJson.id;
-
-    // Todo: Ensure Facebook Posts and IG posts are the same structure
-    // Either create a new type for each social or generalize the type and db models
-    const publishUrl = `https://graph.facebook.com/v20.0/${post.page.pageId}/media_publish?creation_id=${containerId}&access_token=${post.page.accessToken}`;
-    const publishResponse = await fetch(publishUrl, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            access_token: post.page.accessToken,
-            creation_id: containerId,
-        }),
-    });
-
-    const publishData = await publishResponse.json();
-
-    await InstagramPost.create({
-        userId: userId,
-        postId: publishData.id,
-        content: post.content,
-        image: post.image,
-        link: post.link,
-        page: post.page,
-        unixTimestamp: post.unixTimestamp,
-    });
-
-    return publishData;
-};
-
 const submitFacebookPosts = async (userId: string, schedulePostRequest: SchedulePostRequest) => {
     for (const page of schedulePostRequest.fbPages) {
         const fbPost = {
@@ -129,25 +75,6 @@ const submitFacebookPosts = async (userId: string, schedulePostRequest: Schedule
         } as IFacebookPost;
 
         const json = await postToFacebook(userId, fbPost);
-        if (json.error) {
-            console.log(json.error);
-            return new Response(JSON.stringify({ error: json.error }), { status: 500 });
-        }
-    }
-
-    return new Response(JSON.stringify({ success: true }), { status: 201 });
-};
-
-const submitInstagramPosts = async (userId: string, schedulePostRequest: SchedulePostRequest) => {
-    for (const page of schedulePostRequest.igPages) {
-        const igPost = {
-            content: schedulePostRequest.content,
-            image: schedulePostRequest.image,
-            link: schedulePostRequest.link,
-            page: page,
-            unixTimestamp: schedulePostRequest.unixTimestamp,
-        } as IInstagramPost;
-        const json = await postToInstagram(userId, igPost);
         if (json.error) {
             console.log(json.error);
             return new Response(JSON.stringify({ error: json.error }), { status: 500 });
@@ -172,21 +99,19 @@ export async function POST(request: Request, { params: params }: { params: { id:
 
     console.log("Posted to facebook: ", fbJson);
 
-    // Post to Instagram
-    const igResponse = await submitInstagramPosts(params.id, schedulePostRequest);
-    const igJson = await igResponse.json();
-    if (!igJson.success) {
-        return new Response(
-            JSON.stringify({ error: "Failed to post to facebook", details: igJson.error }),
-            { status: 500 },
-        );
-    }
+    const result = await agenda.schedule(
+        new Date(schedulePostRequest.unixTimestamp * 1000),
+        "publishInstagramPost",
+        {
+            userId: params.id,
+            post: schedulePostRequest,
+        },
+    );
 
-    console.log("Posted to instagram: ", igJson);
     // Todo
     // Post to X
 
-    return new Response(JSON.stringify({ success: true, data: { fb: fbJson, ig: igJson } }), {
+    return new Response(JSON.stringify({ success: true, data: { fb: fbJson, ig: result } }), {
         status: 201,
     });
 }
