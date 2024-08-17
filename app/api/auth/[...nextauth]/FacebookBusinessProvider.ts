@@ -1,6 +1,6 @@
 import { Provider } from "next-auth/providers/index";
 
-export const FacebookBusinessProvider = {
+const FacebookBusinessProvider = {
     id: "facebook_business",
     name: "Facebook for Business",
     type: "oauth",
@@ -34,5 +34,7 @@ export const FacebookBusinessProvider = {
     },
     httpOptions: {
         timeout: 100000,
-    }
+    },
 } satisfies Provider;
+
+export default FacebookBusinessProvider;

@@ -3,18 +3,8 @@
 import type { IFacebookPost } from "@/models/FacebookPost";
 import type { SchedulePostRequest } from "@/app/posts/create/page";
 import FacebookPost from "@/models/FacebookPost";
-import agenda from "@/lib/agenda";
-import "@/lib/jobs";
 
 const META_API_URL = "https://graph.facebook.com/v20.0";
-
-// interface FBPost {
-//     content: string;
-//     image: { fileUrl: string; fileId: string };
-//     link: string;
-//     page: FacebookPage;
-//     unixTimestamp: number;
-// }
 
 const postToFacebook = async (userId: string, post: IFacebookPost) => {
     const url = `${META_API_URL}/${post.page.pageId}/${post.image ? "photos" : "feed"}?access_token=${post.page.accessToken}&url=${post.image.fileUrl || ""}&message=${post.content}&link=${post.link || ""}&scheduled_publish_time=${post.unixTimestamp}&published=false`;
@@ -56,14 +46,6 @@ const postToFacebook = async (userId: string, post: IFacebookPost) => {
     return data;
 };
 
-// interface IGPost {
-//     content: string;
-//     image: { fileUrl: string; fileId: string };
-//     link: string;
-//     page: InstagramPage;
-//     unixTimestamp: number;
-// }
-
 const submitFacebookPosts = async (userId: string, schedulePostRequest: SchedulePostRequest) => {
     for (const page of schedulePostRequest.fbPages) {
         const fbPost = {
@@ -99,19 +81,22 @@ export async function POST(request: Request, { params: params }: { params: { id:
 
     console.log("Posted to facebook: ", fbJson);
 
-    const result = await agenda.schedule(
-        new Date(schedulePostRequest.unixTimestamp * 1000),
-        "publishInstagramPost",
-        {
-            userId: params.id,
-            post: schedulePostRequest,
+    const response = await fetch("http://localhost:3001/schedule-job", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
         },
-    );
+        body: JSON.stringify({
+            ...schedulePostRequest,
+        }),
+    });
 
+    const igJson = await response.json();
+    console.log("Scheduled post to instagram: ", igJson);
     // Todo
     // Post to X
 
-    return new Response(JSON.stringify({ success: true, data: { fb: fbJson, ig: result } }), {
+    return new Response(JSON.stringify({ success: true, data: { fb: fbJson, ig: igJson } }), {
         status: 201,
     });
 }

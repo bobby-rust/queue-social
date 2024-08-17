@@ -1,7 +1,8 @@
 import NextAuth from "next-auth/next";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { FacebookBusinessProvider } from "./FacebookBusinessProvider";
+import InstagramProvider from "next-auth/providers/instagram";
+import FacebookBusinessProvider from "./FacebookBusinessProvider";
 import dbConnect from "@/lib/dbConnect";
 import clientPromise from "@/lib/mongodb";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
@@ -61,6 +62,15 @@ export const authOptions = {
             allowDangerousEmailAccountLinking: true,
         }),
         FacebookBusinessProvider,
+        InstagramProvider({
+            clientId: process.env.INSTAGRAM_CLIENT_ID ?? "",
+            clientSecret: process.env.INSTAGRAM_CLIENT_SECRET ?? "",
+            authorization: {
+                params: {
+                    redirect_uri: "https://localhost:3000",
+                },
+            },
+        }),
     ],
     callbacks: {
         async signIn(request: any) {

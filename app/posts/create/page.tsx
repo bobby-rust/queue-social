@@ -16,6 +16,7 @@ import type { FacebookPage } from "@/models/FacebookPage";
 import type { InstagramPage } from "@/models/InstagramPage";
 
 export interface SchedulePostRequest {
+    userId: string;
     content: string;
     image: { fileUrl: string; fileId: string };
     link: string;
@@ -95,6 +96,8 @@ export default function CreatePost() {
         xPages: [],
     });
 
+    const [disableSubmit, setDisableSubmit] = useState(true);
+
     const router = useRouter();
     if (!pages) router.push("/connect");
 
@@ -113,6 +116,7 @@ export default function CreatePost() {
 
     const submitPost = async (post: SchedulePostForm) => {
         const schedulePostRequest: SchedulePostRequest = {
+            userId: session.user.id,
             content: post.content,
             image: post.image,
             link: post.link,
@@ -346,8 +350,12 @@ export default function CreatePost() {
                                     setFieldValue("time", time?.toDate());
                                 }}
                             />
-                            <button type="submit" className="btn btn-primary w-1/5">
-                                Submit
+                            <button
+                                type="submit"
+                                className={`btn btn-primary w-1/5 ${disableSubmit ? "btn-disabled" : ""}`}
+                            >
+                                {disableSubmit && <span className="loading loading-spinner"></span>}
+                                {disableSubmit ? "Submitting Post..." : "Submit"}
                             </button>
                         </Form>
                     )}

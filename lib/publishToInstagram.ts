@@ -1,11 +1,14 @@
-import { InstagramPost } from "@/models/InstagramPost";
+import InstagramPost from "@/models/InstagramPost";
 import type { IInstagramPost } from "@/models/InstagramPost";
 import type { SchedulePostRequest } from "@/app/posts/create/page";
 
+/**
+ * Creates the instagram media container, the first step in posting to instagram
+ */
 const createInstagramMediaContainer = async (post: IInstagramPost) => {
     if (!post.page.pageId) {
         console.log("Missing instagram account ID");
-        return { success: false, message: "Missing instagram account ID" };
+        return { success: false, message: "Missing instagram account ID" } as any;
     }
 
     console.log("Got body in post to IG func: ", post);
@@ -27,9 +30,12 @@ const createInstagramMediaContainer = async (post: IInstagramPost) => {
 
     const createContainerJson = await response.json();
     console.log("Result of instagram create container: ", createContainerJson);
-}
+};
 
-export default const publishToInstagram = async (userId: string, post: IInstagramPost) => {
+/**
+ * Publishes a post to Instagram
+ */
+const publishToInstagram = async (userId: string, post: IInstagramPost) => {
     const createContainerJson = await createInstagramMediaContainer(post);
     const containerId = createContainerJson.id;
 
@@ -62,6 +68,10 @@ export default const publishToInstagram = async (userId: string, post: IInstagra
     return publishData;
 };
 
+/**
+ * Takes a userId and a SchedulePostRequest and posts the content to
+ * each IG page in igPages
+ */
 const submitInstagramPosts = async (userId: string, schedulePostRequest: SchedulePostRequest) => {
     for (const page of schedulePostRequest.igPages) {
         const igPost = {
@@ -71,7 +81,7 @@ const submitInstagramPosts = async (userId: string, schedulePostRequest: Schedul
             page: page,
             unixTimestamp: schedulePostRequest.unixTimestamp,
         } as IInstagramPost;
-        const json = await postToInstagram(userId, igPost);
+        const json = await publishToInstagram(userId, igPost);
         if (json.error) {
             console.log(json.error);
             return new Response(JSON.stringify({ error: json.error }), { status: 500 });
@@ -80,3 +90,5 @@ const submitInstagramPosts = async (userId: string, schedulePostRequest: Schedul
 
     return new Response(JSON.stringify({ success: true }), { status: 201 });
 };
+
+export default submitInstagramPosts;
