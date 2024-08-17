@@ -1,0 +1,24 @@
+{
+    "name": "publish-post-jobs",
+    "version": "1.0.0",
+    "description": "Schedule posts to be published in the future with agenda.js jobs",
+    "main": "server.js",
+    "type": "module",
+    "scripts": {
+        "start": "nodemon --verbose server.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@hokify/agenda": "^6.3.0",
+        "cors": "^2.8.5",
+        "express": "^4.19.2",
+        "mongoose": "^8.5.3"
+    },
+    "devDependencies": {
+        "dotenv": "^16.4.5",
+        "nodemon": "^3.1.4"
+    }
+}
