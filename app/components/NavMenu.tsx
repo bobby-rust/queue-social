@@ -15,27 +15,25 @@ export default async function NavMenu({ children }: { children: React.ReactNode 
             <div className="drawer-content flex flex-col">
                 {/* Navbar */}
                 <div className="navbar w-full">
-                    <div className="flex-none lg:hidden">
-                        <label
-                            htmlFor="my-drawer-3"
-                            aria-label="open sidebar"
-                            className="btn btn-square btn-ghost"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                className="inline-block h-6 w-6 stroke-current"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M4 6h16M4 12h16M4 18h16"
-                                ></path>
-                            </svg>
-                        </label>
-                    </div>
+                    {/* <div className="flex-none lg:hidden"> */}
+                    {/*     <label */}
+                    {/*         htmlFor="my-drawer-3" */}
+                    {/*         aria-label="open sidebar" */}
+                    {/*         className="btn btn-square btn-ghost" */}
+                    {/*     > */}
+                    {/*         <svg */}
+                    {/*             xmlns="http://www.w3.org/2000/svg" */}
+                    {/*             fill="none" */}
+                    {/*             viewBox="0 0 24 24" */}
+                    {/*             className="inline-block h-6 w-6 stroke-current" */}
+                    {/*         > */}
+                    {/*             <path */}
+                    {/*                 strokeLinecap="round" */}
+                    {/*                 strokeLinejoin="round" */}
+                    {/*                 strokeWidth="2" */}
+                    {/*                 d="M4 6h16M4 12h16M4 18h16" */}
+                    {/*             ></path> */}
+                    {/*         </svg> */}
                     <div className="mx-2 flex-1 px-2 gap-2">
                         {/* <Menu /> */}
                         <label
@@ -128,7 +126,7 @@ export default async function NavMenu({ children }: { children: React.ReactNode 
                         </ul>
                         <ul className="flex flex-col gap-4">
                             <li className="flex-1">
-                                <a className="btn btn-ghost w-full justify-start">
+                                <div className="btn btn-ghost w-full justify-start">
                                     {session?.user?.image ? (
                                         <Image
                                             className="rounded-full"
@@ -138,10 +136,18 @@ export default async function NavMenu({ children }: { children: React.ReactNode 
                                             height={24}
                                         />
                                     ) : (
-                                        <CircleUser />
+                                        <div>
+                                            <Link
+                                                className="flex gap-2 justify-center items-center"
+                                                href="/api/auth/signin"
+                                            >
+                                                <CircleUser /> Log in
+                                            </Link>
+                                        </div>
                                     )}
-                                    {`${session?.user?.first_name} ${session?.user?.last_name}`}
-                                </a>
+                                    {session?.user &&
+                                        `${session?.user?.first_name} ${session?.user?.last_name}`}
+                                </div>
                             </li>
                             <li className="flex-1">
                                 <a className="btn btn-ghost w-full justify-start">

@@ -90,6 +90,7 @@ function checkTime(time: Date) {
 
 export default function CreatePost() {
     const { data: session }: any = useSession();
+
     const [pages, setPages] = useState<Pages>({
         fbPages: [],
         igPages: [],
@@ -100,6 +101,9 @@ export default function CreatePost() {
 
     const router = useRouter();
     if (!pages) router.push("/connect");
+    if (!session) {
+        router.push("/api/auth/signin");
+    }
 
     function findPagesFromNames(social: string, pagesNames: string[]) {
         switch (social) {

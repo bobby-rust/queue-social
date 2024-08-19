@@ -3,6 +3,7 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import InstagramProvider from "next-auth/providers/instagram";
 import FacebookBusinessProvider from "./FacebookBusinessProvider";
+import TwitterProvider from "next-auth/providers/twitter";
 import dbConnect from "@/lib/dbConnect";
 import clientPromise from "@/lib/mongodb";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
@@ -71,6 +72,15 @@ export const authOptions = {
                 },
             },
         }),
+        TwitterProvider({
+            clientId: process.env.TWITTER_CLIENT_ID ?? "",
+            clientSecret: process.env.TWITTER_CLIENT_SECRET ?? "",
+            version: "2.0",
+            authorization: {
+                url: "https://twitter.com/i/oauth2/authorize",
+                params: { scope: "users.read tweet.read offline.access tweet.write" },
+            },
+        }),
     ],
     callbacks: {
         async signIn(request: any) {
@@ -86,6 +96,8 @@ export const authOptions = {
                         fbPages,
                     );
                 }
+            } else if (request.account.provider === "twitter") {
+                console.log("TWITTER REQUEST: ", request);
             }
 
             return true;

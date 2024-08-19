@@ -101,6 +101,23 @@ export async function POST(request: Request, { params: params }: { params: { id:
     });
 }
 
+const postToTwitter = async (userId: string, post: any) => {
+    const url = `https://api.x.com/2/tweets`;
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-Api-Key": process.env.TWITTER_API_KEY ?? "",
+            "X-Api-Secret": process.env.TWITTER_API_SECRET ?? "",
+            "X-Access-Token": process.env.TWITTER_ACCESS_TOKEN ?? "",
+            "X-Access-Token-Secret": process.env.TWITTER_ACCESS_TOKEN_SECRET ?? "",
+        },
+        body: JSON.stringify(post),
+    });
+    const data = await response.json();
+};
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
     const posts = await FacebookPost.find({ userId: params.id });
     return new Response(JSON.stringify(posts));
