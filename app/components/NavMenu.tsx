@@ -60,7 +60,7 @@ export default async function NavMenu({ children }: { children: React.ReactNode 
                         <Link href="/">QueueSocial</Link>
                     </div>
                     <div className="hidden flex-none lg:block">
-                        <ul className="menu menu-horizontal">
+                        <ul className="menu menu-horizontal gap-2">
                             {/* Navbar menu content here */}
                             {!session && (
                                 <li>
