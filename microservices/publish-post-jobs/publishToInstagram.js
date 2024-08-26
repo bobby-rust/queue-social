@@ -1,5 +1,3 @@
-import InstagramPost from "./models/InstagramPost.js";
-
 const createInstagramMediaContainer = async (post) => {
     if (!post.page.pageId) {
         console.log("Missing instagram account ID");
@@ -33,7 +31,7 @@ const createInstagramMediaContainer = async (post) => {
 /**
  * Publishes a post to Instagram
  */
-const publishToInstagram = async (userId, post) => {
+const publishToInstagram = async (post) => {
     const createContainerJson = await createInstagramMediaContainer(post);
     const containerId = createContainerJson.id;
 
@@ -53,40 +51,21 @@ const publishToInstagram = async (userId, post) => {
 
     const publishData = await publishResponse.json();
 
-    await InstagramPost.create({
-        userId: userId,
-        postId: publishData.id,
-        content: post.content,
-        image: post.image,
-        link: post.link,
-        page: post.page,
-        unixTimestamp: post.unixTimestamp,
-    });
-
     return publishData;
 };
 
 /**
- * Takes a userId and a SchedulePostRequest and posts the content to
- * each IG page in igPages
+ * Publishes a post to Instagram.
  */
-const submitInstagramPosts = async (schedulePostRequest) => {
-    for (const page of schedulePostRequest.igPages) {
-        const igPost = {
-            content: schedulePostRequest.content,
-            image: schedulePostRequest.image,
-            link: schedulePostRequest.link,
-            page: page,
-            unixTimestamp: schedulePostRequest.unixTimestamp,
-        };
-        const json = await publishToInstagram(schedulePostRequest.userId, igPost);
-        if (json.error) {
-            console.log(json.error);
-            return new Response(JSON.stringify({ error: json.error }), { status: 500 });
-        }
+const submitInstagramPost = async (post) => {
+    const json = await publishToInstagram(post);
+
+    if (json.error) {
+        console.log(json.error);
+        return new Response(JSON.stringify({ error: json.error }), { status: 500 });
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 201 });
 };
 
-export default submitInstagramPosts;
+export default submitInstagramPost;

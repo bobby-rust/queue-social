@@ -15,17 +15,6 @@ import type { XPage } from "@/models/XPage";
 import type { FacebookPage } from "@/models/FacebookPage";
 import type { InstagramPage } from "@/models/InstagramPage";
 
-export interface SchedulePostRequest {
-    userId: string;
-    content: string;
-    image: { fileUrl: string; fileId: string };
-    link: string;
-    fbPages: FacebookPage[];
-    igPages: InstagramPage[];
-    xPages: XPage[];
-    unixTimestamp: number;
-}
-
 interface SchedulePostForm {
     content: string;
     image: { fileUrl: string; fileId: string };
@@ -175,6 +164,14 @@ export default function CreatePost() {
     useEffect(() => {
         console.log("PAGES: ", pages);
     }, [pages]);
+
+    const postToTwitter = async () => {
+        const url = `/api/users/${session.user.id}/posts/twitter`;
+        const response = await fetch(url, {
+            method: "POST",
+        });
+        console.log(response);
+    };
 
     return (
         <div className="flex flex-col items-center min-h-[70vh] p-16">
@@ -365,6 +362,12 @@ export default function CreatePost() {
                     )}
                 </Formik>
             </div>
+            <button
+                onClick={postToTwitter}
+                className="btn btn-ghost btn-wide flex justify-center items-center border-2 border-slate-300"
+            >
+                Post to Twitter
+            </button>
         </div>
     );
 }

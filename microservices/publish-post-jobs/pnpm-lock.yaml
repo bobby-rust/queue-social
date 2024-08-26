@@ -20,6 +20,9 @@ importers:
       mongoose:
         specifier: ^8.5.3
         version: 8.5.3(@aws-sdk/credential-providers@3.632.0(@aws-sdk/client-sso-oidc@3.632.0(@aws-sdk/client-sts@3.632.0)))(socks@2.8.3)
+      twitter-api-v2:
+        specifier: ^1.17.2
+        version: 1.17.2
     devDependencies:
       dotenv:
         specifier: ^16.4.5
@@ -843,6 +846,9 @@ packages:
 
   tslib@2.6.3:
     resolution: {integrity: sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==}
+
+  twitter-api-v2@1.17.2:
+    resolution: {integrity: sha512-V8QvCkuQ+ydIakwYbVC4cuQxGlvjdRZI0L7TT5v9zGsf+SwX40rv3IFRHB8Z1cXJLcRFT0FI3xG3/f4zwS6cRA==}
 
   type-is@1.6.18:
     resolution: {integrity: sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g==}
@@ -2193,6 +2199,8 @@ snapshots:
 
   tslib@2.6.3:
     optional: true
+
+  twitter-api-v2@1.17.2: {}
 
   type-is@1.6.18:
     dependencies:

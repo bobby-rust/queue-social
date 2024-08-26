@@ -15,7 +15,8 @@
         "@hokify/agenda": "^6.3.0",
         "cors": "^2.8.5",
         "express": "^4.19.2",
-        "mongoose": "^8.5.3"
+        "mongoose": "^8.5.3",
+        "twitter-api-v2": "^1.17.2"
     },
     "devDependencies": {
         "dotenv": "^16.4.5",
