@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer reset, base, tokens, recipes, utilities;
-
 html {
     @apply scroll-smooth;
 }
