@@ -34,7 +34,6 @@
         "**/*.tsx",
         ".next/types/**/*.ts",
         "./app/*",
-        "styled-system"
     ],
     "exclude": [
         "node_modules"

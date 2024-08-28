@@ -7,11 +7,11 @@ import { Link } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { UploadDropzone } from "@/utils/uploadthing";
-import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 import getPages from "@/lib/getPages";
 import PageIcon from "./PageIcon";
 import { SchedulePostRequest } from "@/types/types";
 import Image from "next/image";
+import DatePicker from "./DatePicker";
 
 interface SchedulePostForm {
     content: string;
@@ -21,7 +21,9 @@ interface SchedulePostForm {
     instagram: any[];
     x: any[];
     date: Date;
-    time: Date;
+    hour: number;
+    minute: number;
+    am: boolean;
     unixTimestamp: number;
     [key: string]: any;
 }
@@ -35,7 +37,9 @@ interface Pages {
 const CreatePostSchema = Yup.object().shape({
     content: Yup.string().required("Content is required"),
     date: Yup.date().required("Date is required"),
-    time: Yup.date().required("Time is required"),
+    hour: Yup.number().required("Hour is required"),
+    minute: Yup.number().required("Minute is required"),
+    am: Yup.boolean().required("AM/PM is required"),
     image: Yup.mixed(),
     link: Yup.string().url("Invalid URL format"),
     facebook: Yup.array(),
@@ -116,52 +120,50 @@ export default function CreatePost() {
     // }
 
     const submitPost = async (post: SchedulePostForm) => {
-        setDisableSubmit(true);
-        const schedulePostRequest: SchedulePostRequest = {
-            userId: session.user.id,
-            content: post.content,
-            image: post.image,
-            link: post.link,
-            // facebook: findPagesFromNames("facebook", post.facebook), // Convert page names to page objects
-            // instagram: findPagesFromNames("instagram", post.instagram),
-            // x: findPagesFromNames("x", post.x),
-            facebook: post.facebook,
-            instagram: post.instagram,
-            x: post.x,
-            unixTimestamp: post.unixTimestamp,
-        };
+        console.log("Submitting post: ", post);
+        // setDisableSubmit(true);
+        // const schedulePostRequest: SchedulePostRequest = {
+        //     userId: session.user.id,
+        //     content: post.content,
+        //     image: post.image,
+        //     link: post.link,
+        //     facebook: post.facebook,
+        //     instagram: post.instagram,
+        //     x: post.x,
+        //     unixTimestamp: post.unixTimestamp,
+        // };
 
-        // Convert date and time to combined unix timestamp
-        const date = combineDateAndTime(post.date, post.time);
-        const unixTimestamp = Math.floor(date.getTime() / 1000);
-        schedulePostRequest.unixTimestamp = unixTimestamp;
+        // // Convert date and time to combined unix timestamp
+        // const date = combineDateAndTime(post.date, post.time);
+        // const unixTimestamp = Math.floor(date.getTime() / 1000);
+        // schedulePostRequest.unixTimestamp = unixTimestamp;
 
-        // Check if time is at least 15 minutes in the future
-        if (!checkTime(date)) {
-            alert("Please choose a time at least 15 minutes in the future.");
-            return;
-        }
+        // // Check if time is at least 15 minutes in the future
+        // if (!checkTime(date)) {
+        //     alert("Please choose a time at least 15 minutes in the future.");
+        //     return;
+        // }
 
-        try {
-            const res = await fetch(`/api/users/${session.user.id}/posts`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(schedulePostRequest),
-            });
+        // try {
+        //     const res = await fetch(`/api/users/${session.user.id}/posts`, {
+        //         method: "POST",
+        //         headers: {
+        //             "Content-Type": "application/json",
+        //         },
+        //         body: JSON.stringify(schedulePostRequest),
+        //     });
 
-            const data = await res.json();
+        //     const data = await res.json();
 
-            if (data.error) {
-                console.log(data);
-                return;
-            }
+        //     if (data.error) {
+        //         console.log(data);
+        //         return;
+        //     }
 
-            router.push("/");
-        } catch (e) {
-            console.log(e);
-        }
+        //     router.push("/");
+        // } catch (e) {
+        //     console.log(e);
+        // }
     };
 
     useEffect(() => {
@@ -190,7 +192,9 @@ export default function CreatePost() {
                         instagram: [],
                         x: [],
                         date: new Date(),
-                        time: new Date(),
+                        hour: 1,
+                        minute: 0,
+                        am: true,
                         unixTimestamp: 0,
                     }}
                     validationSchema={CreatePostSchema}
@@ -348,56 +352,7 @@ export default function CreatePost() {
                                     </div>
                                 )}
                             </div>
-                            {/* <PageSelect */}
-                            {/*     Icon={() => ( */}
-                            {/*         <Image */}
-                            {/*             src="/facebook_icon.png" */}
-                            {/*             alt="Facebook" */}
-                            {/*             width={20} */}
-                            {/*             height={20} */}
-                            {/*         /> */}
-                            {/*     )} */}
-                            {/*     pages={pages.fbPages.map((page: any) => page.name)} */}
-                            {/*     setFieldValue={setFieldValue} */}
-                            {/*     social="Facebook" */}
-                            {/*     field="fbPages" */}
-                            {/* /> */}
-
-                            {/* <PageSelect */}
-                            {/*     Icon={() => ( */}
-                            {/*         <Image */}
-                            {/*             src="/instagram_icon.png" */}
-                            {/*             alt="Instagram" */}
-                            {/*             width={20} */}
-                            {/*             height={20} */}
-                            {/*         /> */}
-                            {/*     )} */}
-                            {/*     pages={pages.igPages.map((page: any) => page.name)} */}
-                            {/*     setFieldValue={setFieldValue} */}
-                            {/*     social="Instagram" */}
-                            {/*     field="igPages" */}
-                            {/* /> */}
-
-                            {/* <PageSelect */}
-                            {/*     Icon={() => ( */}
-                            {/*         <Image src="/x_icon.png" alt="X" width={20} height={20} /> */}
-                            {/*     )} */}
-                            {/*     pages={pages.xPages.map((page: any) => page.name)} */}
-                            {/*     setFieldValue={setFieldValue} */}
-                            {/*     social="X" */}
-                            {/*     field="xPages" */}
-                            {/* /> */}
-
-                            <DatePicker
-                                onChange={(date) => {
-                                    setFieldValue("date", date?.toDate());
-                                }}
-                            />
-                            <TimePicker
-                                onChange={(time) => {
-                                    setFieldValue("time", time?.toDate());
-                                }}
-                            />
+                            <DatePicker setFieldValue={setFieldValue} formState={values} />
                             <button
                                 type="submit"
                                 className={`btn btn-primary w-1/5 ${disableSubmit ? "btn-disabled" : ""}`}
