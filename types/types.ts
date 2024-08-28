@@ -7,8 +7,8 @@ export interface SchedulePostRequest {
     content: string;
     image: { fileUrl: string; fileId: string };
     link: string;
-    fbPages: FacebookPage[];
-    igPages: InstagramPage[];
-    xPages: XPage[];
+    facebook: FacebookPage[];
+    instagram: InstagramPage[];
+    x: XPage[];
     unixTimestamp: number;
 }

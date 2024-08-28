@@ -4,33 +4,32 @@ import React, { useEffect, useState } from "react";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { Link } from "lucide-react";
-import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { UploadDropzone } from "@/utils/uploadthing";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 import getPages from "@/lib/getPages";
-import PageSelect from "./PageSelect";
-import type { XPage } from "@/models/XPage";
-import type { FacebookPage } from "@/models/FacebookPage";
-import type { InstagramPage } from "@/models/InstagramPage";
+import PageIcon from "./PageIcon";
+import { SchedulePostRequest } from "@/types/types";
+import Image from "next/image";
 
 interface SchedulePostForm {
     content: string;
     image: { fileUrl: string; fileId: string };
     link: string;
-    fbPages: string[];
-    igPages: string[];
-    xPages: string[];
+    facebook: any[];
+    instagram: any[];
+    x: any[];
     date: Date;
     time: Date;
     unixTimestamp: number;
+    [key: string]: any;
 }
 
 interface Pages {
-    fbPages: any;
-    igPages: any;
-    xPages: any;
+    facebook: any;
+    instagram: any;
+    x: any;
 }
 
 const CreatePostSchema = Yup.object().shape({
@@ -39,9 +38,9 @@ const CreatePostSchema = Yup.object().shape({
     time: Yup.date().required("Time is required"),
     image: Yup.mixed(),
     link: Yup.string().url("Invalid URL format"),
-    fbPages: Yup.array(),
-    igPages: Yup.array(),
-    xPages: Yup.array(),
+    facebook: Yup.array(),
+    instagram: Yup.array(),
+    x: Yup.array(),
     unixTimestamp: Yup.number(),
 });
 
@@ -59,20 +58,29 @@ function combineDateAndTime(day: Date, time: Date) {
     return combinedDate;
 }
 
+// function checkTime(time: Date) {
+//     const now = new Date();
+//     const nowUTC = Date.UTC(
+//         now.getUTCFullYear(),
+//         now.getUTCMonth(),
+//         now.getUTCDate(),
+//         now.getUTCHours(),
+//         now.getUTCMinutes(),
+//         now.getUTCSeconds(),
+//     );
+
+//     console.log("nowUTC: ", nowUTC);
+//     console.log("time.getTime(): ", time.getTime());
+//     const diff = (time.getTime() - nowUTC) / 60000;
+//     console.log("diff: ", diff);
+//     return diff >= 15;
+// }
 function checkTime(time: Date) {
     const now = new Date();
-    const nowUTC = Date.UTC(
-        now.getUTCFullYear(),
-        now.getUTCMonth(),
-        now.getUTCDate(),
-        now.getUTCHours(),
-        now.getUTCMinutes(),
-        now.getUTCSeconds(),
-    );
+    const diff = (time.getTime() - now.getTime()) / 60000;
 
-    console.log("nowUTC: ", nowUTC);
-    console.log("time.getTime(): ", time.getTime());
-    const diff = (time.getTime() - nowUTC) / 60000;
+    console.log("now: ", now);
+    console.log("time: ", time.getTime());
     console.log("diff: ", diff);
     return diff >= 15;
 }
@@ -81,12 +89,12 @@ export default function CreatePost() {
     const { data: session }: any = useSession();
 
     const [pages, setPages] = useState<Pages>({
-        fbPages: [],
-        igPages: [],
-        xPages: [],
+        facebook: [],
+        instagram: [],
+        x: [],
     });
 
-    const [disableSubmit, setDisableSubmit] = useState(true);
+    const [disableSubmit, setDisableSubmit] = useState(false);
 
     const router = useRouter();
     if (!pages) router.push("/connect");
@@ -94,28 +102,32 @@ export default function CreatePost() {
         router.push("/api/auth/signin");
     }
 
-    function findPagesFromNames(social: string, pagesNames: string[]) {
-        switch (social) {
-            case "facebook":
-                return pages.fbPages.filter((page: any) => pagesNames.includes(page.name));
-            case "instagram":
-                return pages.igPages.filter((page: any) => pagesNames.includes(page.name));
-            case "x":
-                return pages.xPages.filter((page: any) => pagesNames.includes(page.name));
-            default:
-                return [];
-        }
-    }
+    // function findPagesFromNames(social: string, pagesNames: string[]) {
+    //     switch (social) {
+    //         case "facebook":
+    //             return pages.facebook.filter((page: any) => pagesNames.includes(page.name));
+    //         case "instagram":
+    //             return pages.instagram.filter((page: any) => pagesNames.includes(page.name));
+    //         case "x":
+    //             return pages.x.filter((page: any) => pagesNames.includes(page.name));
+    //         default:
+    //             return [];
+    //     }
+    // }
 
     const submitPost = async (post: SchedulePostForm) => {
+        setDisableSubmit(true);
         const schedulePostRequest: SchedulePostRequest = {
             userId: session.user.id,
             content: post.content,
             image: post.image,
             link: post.link,
-            fbPages: findPagesFromNames("facebook", post.fbPages), // Convert page names to page objects
-            igPages: findPagesFromNames("instagram", post.igPages),
-            xPages: findPagesFromNames("x", post.xPages),
+            // facebook: findPagesFromNames("facebook", post.facebook), // Convert page names to page objects
+            // instagram: findPagesFromNames("instagram", post.instagram),
+            // x: findPagesFromNames("x", post.x),
+            facebook: post.facebook,
+            instagram: post.instagram,
+            x: post.x,
             unixTimestamp: post.unixTimestamp,
         };
 
@@ -165,14 +177,6 @@ export default function CreatePost() {
         console.log("PAGES: ", pages);
     }, [pages]);
 
-    const postToTwitter = async () => {
-        const url = `/api/users/${session.user.id}/posts/twitter`;
-        const response = await fetch(url, {
-            method: "POST",
-        });
-        console.log(response);
-    };
-
     return (
         <div className="flex flex-col items-center min-h-[70vh] p-16">
             <div className="flex flex-col gap-4 justify-center items-center bg-base-200 p-12 rounded-lg shadow-lg w-3/5">
@@ -182,9 +186,9 @@ export default function CreatePost() {
                         content: "",
                         image: { fileUrl: "", fileId: "" },
                         link: "",
-                        fbPages: [],
-                        igPages: [],
-                        xPages: [],
+                        facebook: [],
+                        instagram: [],
+                        x: [],
                         date: new Date(),
                         time: new Date(),
                         unixTimestamp: 0,
@@ -197,9 +201,42 @@ export default function CreatePost() {
                         resetForm();
                     }}
                 >
-                    {({ setFieldValue, errors, touched }) => (
+                    {({ setFieldValue, errors, values, touched }) => (
                         <Form className="flex flex-col gap-4 w-full">
                             <div className="form-control w-full min-h-80">
+                                <div className="flex gap-4">
+                                    {Object.entries(pages).map(([social, pages]) => (
+                                        <>
+                                            {pages.map((page: any) => (
+                                                <PageIcon
+                                                    social={social}
+                                                    key={page.id}
+                                                    page={page}
+                                                    checked={page.selected}
+                                                    setChecked={(pageToSelect: any) => {
+                                                        console.log("pageToSelect: ", pageToSelect);
+                                                        // If page is already selected, unselect it
+                                                        !values[social].includes(pageToSelect)
+                                                            ? setFieldValue(social, [
+                                                                  ...values[social],
+                                                                  pageToSelect,
+                                                              ])
+                                                            : // If page is not selected, select it
+                                                              setFieldValue(
+                                                                  social,
+                                                                  values[social].filter(
+                                                                      (page: any) =>
+                                                                          page.id !==
+                                                                          pageToSelect.id,
+                                                                  ),
+                                                              );
+                                                        page.selected = !page.selected;
+                                                    }}
+                                                />
+                                            ))}
+                                        </>
+                                    ))}
+                                </div>
                                 {errors.content && touched.content ? (
                                     <div
                                         className="tooltip tooltip-right tooltip-error tooltip-open w-full"
@@ -311,35 +348,45 @@ export default function CreatePost() {
                                     </div>
                                 )}
                             </div>
-                            <PageSelect
-                                Icon={() => (
-                                    <Image
-                                        src="/facebook_icon.png"
-                                        alt="Facebook"
-                                        width={20}
-                                        height={20}
-                                    />
-                                )}
-                                pages={pages.fbPages.map((page: any) => page.name)}
-                                setFieldValue={setFieldValue}
-                                social="Facebook"
-                                field="fbPages"
-                            />
+                            {/* <PageSelect */}
+                            {/*     Icon={() => ( */}
+                            {/*         <Image */}
+                            {/*             src="/facebook_icon.png" */}
+                            {/*             alt="Facebook" */}
+                            {/*             width={20} */}
+                            {/*             height={20} */}
+                            {/*         /> */}
+                            {/*     )} */}
+                            {/*     pages={pages.fbPages.map((page: any) => page.name)} */}
+                            {/*     setFieldValue={setFieldValue} */}
+                            {/*     social="Facebook" */}
+                            {/*     field="fbPages" */}
+                            {/* /> */}
 
-                            <PageSelect
-                                Icon={() => (
-                                    <Image
-                                        src="/instagram_icon.png"
-                                        alt="Instagram"
-                                        width={20}
-                                        height={20}
-                                    />
-                                )}
-                                pages={pages.igPages.map((page: any) => page.name)}
-                                setFieldValue={setFieldValue}
-                                social="Instagram"
-                                field="igPages"
-                            />
+                            {/* <PageSelect */}
+                            {/*     Icon={() => ( */}
+                            {/*         <Image */}
+                            {/*             src="/instagram_icon.png" */}
+                            {/*             alt="Instagram" */}
+                            {/*             width={20} */}
+                            {/*             height={20} */}
+                            {/*         /> */}
+                            {/*     )} */}
+                            {/*     pages={pages.igPages.map((page: any) => page.name)} */}
+                            {/*     setFieldValue={setFieldValue} */}
+                            {/*     social="Instagram" */}
+                            {/*     field="igPages" */}
+                            {/* /> */}
+
+                            {/* <PageSelect */}
+                            {/*     Icon={() => ( */}
+                            {/*         <Image src="/x_icon.png" alt="X" width={20} height={20} /> */}
+                            {/*     )} */}
+                            {/*     pages={pages.xPages.map((page: any) => page.name)} */}
+                            {/*     setFieldValue={setFieldValue} */}
+                            {/*     social="X" */}
+                            {/*     field="xPages" */}
+                            {/* /> */}
 
                             <DatePicker
                                 onChange={(date) => {
@@ -362,12 +409,6 @@ export default function CreatePost() {
                     )}
                 </Formik>
             </div>
-            <button
-                onClick={postToTwitter}
-                className="btn btn-ghost btn-wide flex justify-center items-center border-2 border-slate-300"
-            >
-                Post to Twitter
-            </button>
         </div>
     );
 }

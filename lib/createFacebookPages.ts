@@ -8,11 +8,16 @@ export default async function createFacebookPages(userId: string, pages: any) {
             userId: userId,
             name: page.name,
             accessToken: page.access_token,
+            profilePicture: page.picture,
         };
         fbPages.push(newFbPage);
         await FacebookPage.findOneAndUpdate(
             { pageId: page.id },
-            { $setOnInsert: newFbPage },
+            {
+                $set: {
+                    ...newFbPage,
+                },
+            },
             { new: true, upsert: true },
         );
     }

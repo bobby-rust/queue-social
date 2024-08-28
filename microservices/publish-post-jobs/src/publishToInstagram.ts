@@ -31,8 +31,12 @@ const createInstagramMediaContainer = async (post) => {
 /**
  * Publishes a post to Instagram
  */
-const publishToInstagram = async (post) => {
+const publishToInstagram = async (post: any) => {
     const createContainerJson = await createInstagramMediaContainer(post);
+    if (createContainerJson.error) {
+        console.error(createContainerJson.error);
+        return new Response(JSON.stringify({ error: createContainerJson.error }), { status: 500 });
+    }
     const containerId = createContainerJson.id;
 
     // Todo: Ensure Facebook Posts and IG posts are the same structure

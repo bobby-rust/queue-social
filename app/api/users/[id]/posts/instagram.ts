@@ -12,7 +12,8 @@ export const submitInstagramPosts = async (
             link: schedulePostRequest.link,
             page: page,
             unixTimestamp: schedulePostRequest.unixTimestamp,
-        } as IInstagramPost;
+            social: "instagram",
+        } as IInstagramPost & { social: "instagram" };
 
         const json = await postToInstagram(userId, igPost);
         if (json.error) {
@@ -24,7 +25,7 @@ export const submitInstagramPosts = async (
     return new Response(JSON.stringify({ success: true }), { status: 201 });
 };
 
-const postToInstagram = async (userId: string, post: IInstagramPost) => {
+const postToInstagram = async (userId: string, post: IInstagramPost & { social: "instagram" }) => {
     const response = await fetch("http://localhost:3001/schedule-job", {
         method: "POST",
         headers: {

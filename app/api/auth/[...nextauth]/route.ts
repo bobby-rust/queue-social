@@ -1,7 +1,6 @@
 import NextAuth from "next-auth/next";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import InstagramProvider from "next-auth/providers/instagram";
 import FacebookBusinessProvider from "./FacebookBusinessProvider";
 import TwitterProvider from "next-auth/providers/twitter";
 import dbConnect from "@/lib/dbConnect";
@@ -14,7 +13,9 @@ import { Types } from "mongoose";
 import removeOldPosts from "@/lib/removeOldPosts";
 import getFacebookPages from "@/lib/getFacebookPages";
 import createFacebookPages from "@/lib/createFacebookPages";
-import createInstagramPagesFromFacebookPages from "@/lib/createInstagramPagesFromFacebookPages";
+import InstagramBusinessProvider from "./InstagramBusinessProvider";
+import FacebookPage from "@/models/FacebookPage";
+import createInstagramPages from "@/lib/createInstagramPages";
 
 const dbAdapter = MongoDBAdapter(clientPromise);
 
@@ -26,7 +27,7 @@ export const authOptions = {
             await dbConnect();
 
             const newUser = {
-                _id: new Types.ObjectId().toString(),
+                id: new Types.ObjectId().toString(),
                 name: user.name,
                 email: user.email,
                 password: user.password,
@@ -64,15 +65,7 @@ export const authOptions = {
             allowDangerousEmailAccountLinking: true,
         }),
         FacebookBusinessProvider,
-        InstagramProvider({
-            clientId: process.env.INSTAGRAM_CLIENT_ID ?? "",
-            clientSecret: process.env.INSTAGRAM_CLIENT_SECRET ?? "",
-            authorization: {
-                params: {
-                    redirect_uri: "https://localhost:3000",
-                },
-            },
-        }),
+        InstagramBusinessProvider,
         TwitterProvider({
             clientId: process.env.TWITTER_API_KEY ?? "",
             clientSecret: process.env.TWITTER_API_SECRET ?? "",
@@ -86,28 +79,31 @@ export const authOptions = {
                 const session = await getServerSession(authOptions);
                 if (session?.user?.id) {
                     const pages = await getFacebookPages(request.account.access_token);
-                    const fbPages = await createFacebookPages(session.user.id, pages);
-                    createInstagramPagesFromFacebookPages(
-                        session.user?.id,
-                        request.account.access_token,
-                        fbPages,
-                    );
+                    await createFacebookPages(session.user.id, pages.data);
+                }
+            } else if (request.account.provider === "instagram_business") {
+                const session = await getServerSession(authOptions);
+                if (session?.user?.id) {
+                    const fbPages = await FacebookPage.find({ userId: session.user.id });
+                    createInstagramPages(session.user?.id, request.account.access_token, fbPages);
                 }
             } else if (request.account.provider === "twitter") {
-                console.log("TWITTER REQUEST: ", request);
                 const oauthToken = request.account.oauth_token;
                 const oauthTokenSecret = request.account.oauth_token_secret;
                 console.log(oauthToken, oauthTokenSecret);
                 const user = await User.findOne({ email: request.user.email });
                 if (user) {
-                    await XPage.create({
-                        pageId: request.user._id, // ?? is this the correct ID? there are a couple IDs in the twitter request... not sure if I'll ever need this field anyways.
-                        userId: user.id,
-                        accessToken: oauthToken,
-                        accessTokenSecret: oauthTokenSecret,
-                        name: request.profile.screen_name,
-                        profilePicture: request.profile.profile_image_url_https,
-                    });
+                    const page = await XPage.find({ pageId: request.profile.id, userId: user._id });
+                    if (!page) {
+                        await XPage.create({
+                            pageId: request.profile.id, // ?? is this the correct ID? there are a couple IDs in the twitter request... not sure if I'll ever need this field anyways.
+                            userId: user._id,
+                            accessToken: oauthToken,
+                            accessTokenSecret: oauthTokenSecret,
+                            name: request.profile.screen_name,
+                            profilePicture: request.profile.profile_image_url_https,
+                        });
+                    }
                 }
             }
 

@@ -55,7 +55,19 @@ export default async function NavMenu({ children }: { children: React.ReactNode 
                                 ></path>
                             </svg>
                         </label>
-                        <Link href="/">QueueSocial</Link>
+                        <Link href="/">
+                            <div className="flex items-center">
+                                <Image
+                                    src="/QueueSocial_logo.png"
+                                    width={50}
+                                    height={50}
+                                    alt="logo"
+                                />
+                                <h1 className="font-bold">QueueSocial</h1>
+                                <div className="divider divider-horizontal"></div>
+                                <div className="text-xs">your social media, on autopilot</div>
+                            </div>
+                        </Link>
                     </div>
                     <div className="hidden flex-none lg:block">
                         <ul className="menu menu-horizontal gap-2">
@@ -67,14 +79,14 @@ export default async function NavMenu({ children }: { children: React.ReactNode 
                             )}
                             {session ? (
                                 <div className="flex gap-4">
-                                    <li>
-                                        <a className="btn btn-ghost btn-circle">
-                                            <div className="indicator">
-                                                <Bell />
-                                                <span className="badge badge-xs badge-primary indicator-item"></span>
-                                            </div>
-                                        </a>
-                                    </li>
+                                    {/* <li> */}
+                                    {/*     <a className="btn btn-ghost btn-circle"> */}
+                                    {/*         <div className="indicator"> */}
+                                    {/*             <Bell /> */}
+                                    {/*             <span className="badge badge-xs badge-primary indicator-item"></span> */}
+                                    {/*         </div> */}
+                                    {/*     </a> */}
+                                    {/* </li> */}
                                     <li>
                                         <SignOut />
                                     </li>
@@ -98,36 +110,40 @@ export default async function NavMenu({ children }: { children: React.ReactNode 
                 ></label>
                 <div className="menu bg-base-200 min-h-full w-80 p-4">
                     <div className="flex flex-col justify-between h-full flex-1">
-                        <ul className="flex flex-col gap-4">
+                        <ul className="flex flex-col gap-2">
                             <li className="flex-1">
                                 <Link href="/" className="btn btn-ghost w-full justify-start">
                                     <Home />
                                     Home
                                 </Link>
                             </li>
-                            <li className="flex-1">
-                                <Link
-                                    href="/posts/create"
-                                    className="btn btn-ghost w-full justify-start"
-                                >
-                                    <Plus />
-                                    Create Post
-                                </Link>
-                            </li>
-                            <li className="flex-1">
-                                <Link
-                                    href="/connect"
-                                    className="btn btn-ghost w-full justify-start"
-                                >
-                                    <AtSign />
-                                    Connect Accounts
-                                </Link>
-                            </li>
+                            {session?.user && (
+                                <>
+                                    <li className="flex-1">
+                                        <Link
+                                            href="/posts/create"
+                                            className="btn btn-ghost w-full justify-start"
+                                        >
+                                            <Plus />
+                                            Create Post
+                                        </Link>
+                                    </li>
+                                    <li className="flex-1">
+                                        <Link
+                                            href="/connect"
+                                            className="btn btn-ghost w-full justify-start"
+                                        >
+                                            <AtSign />
+                                            Connect Accounts
+                                        </Link>
+                                    </li>
+                                </>
+                            )}
                         </ul>
-                        <ul className="flex flex-col gap-4">
+                        <ul className="flex flex-col gap-2">
                             <li className="flex-1">
                                 <div className="btn btn-ghost w-full justify-start">
-                                    {session?.user?.image ? (
+                                    {session?.user?.image && (
                                         <Image
                                             className="rounded-full"
                                             src={session?.user?.image}
@@ -135,26 +151,34 @@ export default async function NavMenu({ children }: { children: React.ReactNode 
                                             width={24}
                                             height={24}
                                         />
-                                    ) : (
-                                        <div>
-                                            <Link
-                                                className="flex gap-2 justify-center items-center"
-                                                href="/api/auth/signin"
-                                            >
-                                                <CircleUser /> Log in
-                                            </Link>
-                                        </div>
                                     )}
                                     {session?.user &&
                                         `${session?.user?.first_name} ${session?.user?.last_name}`}
                                 </div>
                             </li>
-                            <li className="flex-1">
-                                <a className="btn btn-ghost w-full justify-start">
-                                    <Settings />
-                                    Settings
-                                </a>
-                            </li>
+                            {session?.user && (
+                                <li className="flex-1">
+                                    <a className="btn btn-ghost w-full justify-start">
+                                        <Settings />
+                                        Settings
+                                    </a>
+                                </li>
+                            )}
+                            {session?.user && (
+                                <li>
+                                    <SignOut />
+                                </li>
+                            )}
+                            {!session?.user && (
+                                <>
+                                    <li>
+                                        <SignIn />
+                                    </li>
+                                    <li>
+                                        <SignUp />
+                                    </li>
+                                </>
+                            )}
                         </ul>
                     </div>
                 </div>

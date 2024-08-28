@@ -39,7 +39,10 @@ microservices/*/.env
 *.tsbuildinfo
 next-env.d.ts
 
+# dev thoughts
 todo.txt
+ideas.txt
+
 ## Panda
 styled-system
 styled-system-studio

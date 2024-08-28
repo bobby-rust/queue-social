@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-export interface User extends mongoose.Document {
+interface User extends mongoose.Document {
     first_name: string;
     last_name: string;
     email: string;
@@ -10,7 +10,7 @@ export interface User extends mongoose.Document {
 }
 
 /* User schema corresponds to a collection in the mongodb database */
-const UserSchema = new mongoose.Schema<User>({
+const userSchema = new mongoose.Schema<User>({
     first_name: {
         type: String,
         required: [true, "Please provide your first name."],
@@ -42,4 +42,5 @@ const UserSchema = new mongoose.Schema<User>({
     },
 });
 
-export default mongoose.models.User || mongoose.model<User>("User", UserSchema);
+export default mongoose.models.User || mongoose.model<User>("User", userSchema);
+export type { User };

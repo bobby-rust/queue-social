@@ -1,18 +1,28 @@
 import React from "react";
 
-import ConnectFacebookButton from "./ConnectFacebookButton";
-import ConnectTwitterButton from "./ConnectTwitterButton";
+import ConnectSocialButton from "./ConnectSocialButton";
 type Props = {};
 
 function ConnectAccount({}: Props) {
     return (
-        <div className="flex flex-col justify-center items-center gap-8">
-            <h1 className="text-3xl bold">ConnectAccount</h1>
+        <div className="flex flex-col justify-center items-center gap-4">
+            <h1 className="text-3xl bold">Connect Account</h1>
             <div className="flex flex-col justify-center items-center">
-                <ConnectFacebookButton />
+                <ConnectSocialButton
+                    social="facebook"
+                    imageSrc="/facebook_icon.png"
+                    signInUrl="facebook_business"
+                />
             </div>
             <div className="flex flex-col justify-center items-center">
-                <ConnectTwitterButton />
+                <ConnectSocialButton social="twitter" imageSrc="/x_icon.png" signInUrl="twitter" />
+            </div>
+            <div>
+                <ConnectSocialButton
+                    social="instagram"
+                    imageSrc="/instagram_icon.png"
+                    signInUrl="instagram_business"
+                />
             </div>
         </div>
     );

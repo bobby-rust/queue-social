@@ -22,4 +22,4 @@ export const instagramPostSchema = new mongoose.Schema<IInstagramPost>({
 });
 
 export default mongoose.models.InstagramPost ||
-    mongoose.model("InstagramPost", instagramPostSchema);
+    mongoose.model<IInstagramPost>("InstagramPost", instagramPostSchema);

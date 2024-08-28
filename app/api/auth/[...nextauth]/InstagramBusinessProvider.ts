@@ -1,13 +1,13 @@
 import { Provider } from "next-auth/providers/index";
 
-const FacebookBusinessProvider = {
-    id: "facebook_business",
-    name: "Facebook for Business",
+const InstagramBusinessProvider = {
+    id: "instagram_business",
+    name: "Instagram for Business",
     type: "oauth",
     authorization: {
         url: "https://www.facebook.com/v20.0/dialog/oauth",
         params: {
-            config_id: process.env.FACEBOOK_CONFIG_ID,
+            config_id: process.env.INSTAGRAM_CONFIG_ID,
         },
     },
     token: {
@@ -38,4 +38,4 @@ const FacebookBusinessProvider = {
     },
 } satisfies Provider;
 
-export default FacebookBusinessProvider;
+export default InstagramBusinessProvider;

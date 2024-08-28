@@ -22,6 +22,7 @@ export async function POST(request: Request, { params: params }: { params: { id:
     console.log("Posted to facebook: ", fbJson);
 
     const igResponse = await submitInstagramPosts(params.id, schedulePostRequest);
+
     const igJson = await igResponse.json();
     if (!igJson.success) {
         return new Response(
