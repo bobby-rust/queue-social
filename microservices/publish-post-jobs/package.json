@@ -2,10 +2,10 @@
     "name": "publish-post-jobs",
     "version": "1.0.0",
     "description": "Schedule posts to be published in the future with agenda.js jobs",
-    "main": "server.js",
+    "main": "dist/server.js",
     "type": "module",
     "scripts": {
-        "start": "nodemon --verbose dist/server.js",
+        "start": "node dist/server.js",
         "build": "tsc",
         "dev": "nodemon --exec tsx src/server.ts",
         "test": "echo \"Error: no test specified\" && exit 1"
