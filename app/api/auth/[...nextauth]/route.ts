@@ -88,13 +88,16 @@ export const authOptions = {
                     createInstagramPages(session.user?.id, request.account.access_token, fbPages);
                 }
             } else if (request.account.provider === "twitter") {
+                console.log("TWITTER REQUEST: ", request);
                 const oauthToken = request.account.oauth_token;
                 const oauthTokenSecret = request.account.oauth_token_secret;
                 console.log(oauthToken, oauthTokenSecret);
-                const user = await User.findOne({ email: request.user.email });
+                const user = await User.findOne({ _id: request.user.id });
+                console.log("USER: ", user);
                 if (user) {
                     const page = await XPage.find({ pageId: request.profile.id, userId: user._id });
-                    if (!page) {
+                    console.log("PAGE: ", page);
+                    if (!page || page.length === 0) {
                         await XPage.create({
                             pageId: request.profile.id, // ?? is this the correct ID? there are a couple IDs in the twitter request... not sure if I'll ever need this field anyways.
                             userId: user._id,
