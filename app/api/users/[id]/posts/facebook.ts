@@ -1,37 +1,20 @@
-import type { IFacebookPost } from "@/models/FacebookPost";
-import type { SchedulePostRequest } from "@/types/types";
-import FacebookPost from "@/models/FacebookPost";
+import FacebookPost, { IFacebookPost } from "@/models/FacebookPost";
+import { SchedulePostRequest } from "@/types/types";
 
-const META_API_URL = "https://graph.facebook.com/v20.0";
-
-const postToFacebook = async (userId: string, post: IFacebookPost) => {
-    const url = `${META_API_URL}/${post.page.pageId}/${post.image ? "photos" : "feed"}?access_token=${post.page.accessToken}&url=${post.image.fileUrl || ""}&message=${post.content}&link=${post.link || ""}&scheduled_publish_time=${post.unixTimestamp}&published=false`;
-    // Uncomment the following line for immediate publish
-    // const url = `${META_API_URL}/${body.page.id}/photos?access_token=${body.page.access_token}&url=${body.image.fileUrl}&message=${body.content}&link=${body.link || ""}&published=true`;
-    const reqBody: any = {
-        published: "false",
-        message: post.content,
-        access_token: post.page.accessToken,
-        scheduled_publish_time: post.unixTimestamp,
-    };
-
-    if (post.link !== "") {
-        reqBody.link = post.link;
-    }
-    if (post.image) {
-        reqBody.url = post.image.fileUrl;
-    }
-
-    const response = await fetch(url, {
+const createFacebookPostJob = async (
+    userId: string,
+    post: IFacebookPost & { social: "facebook" },
+) => {
+    const response = await fetch("http://localhost:3001/schedule-job", {
         method: "POST",
         headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: "OAuth " + post.page.accessToken,
+            "Content-Type": "application/json",
         },
-        body: JSON.stringify(reqBody),
+        body: JSON.stringify({ ...post, userId: userId }),
     });
-    const data = await response.json();
 
+    const fbJson = await response.json();
+    console.log("Scheduled post to facebook: ", fbJson);
     await FacebookPost.create({
         content: post.content,
         image: post.image,
@@ -40,24 +23,24 @@ const postToFacebook = async (userId: string, post: IFacebookPost) => {
         unixTimestamp: post.unixTimestamp,
         userId: userId,
     });
-
-    return data;
+    return fbJson;
 };
 
 export const submitFacebookPosts = async (
     userId: string,
     schedulePostRequest: SchedulePostRequest,
 ) => {
-    for (const page of schedulePostRequest.fbPages) {
+    for (const page of schedulePostRequest.facebook) {
         const fbPost = {
             content: schedulePostRequest.content,
             image: schedulePostRequest.image,
             link: schedulePostRequest.link,
             page: page,
             unixTimestamp: schedulePostRequest.unixTimestamp,
-        } as IFacebookPost;
+            social: "facebook",
+        } as IFacebookPost & { social: "facebook" };
 
-        const json = await postToFacebook(userId, fbPost);
+        const json = await createFacebookPostJob(userId, fbPost);
         if (json.error) {
             console.log(json.error);
             return new Response(JSON.stringify({ error: json.error }), { status: 500 });

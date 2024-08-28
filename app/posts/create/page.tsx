@@ -121,49 +121,49 @@ export default function CreatePost() {
 
     const submitPost = async (post: SchedulePostForm) => {
         console.log("Submitting post: ", post);
-        // setDisableSubmit(true);
-        // const schedulePostRequest: SchedulePostRequest = {
-        //     userId: session.user.id,
-        //     content: post.content,
-        //     image: post.image,
-        //     link: post.link,
-        //     facebook: post.facebook,
-        //     instagram: post.instagram,
-        //     x: post.x,
-        //     unixTimestamp: post.unixTimestamp,
-        // };
+        setDisableSubmit(true);
+        const schedulePostRequest: SchedulePostRequest = {
+            userId: session.user.id,
+            content: post.content,
+            image: post.image,
+            link: post.link,
+            facebook: post.facebook,
+            instagram: post.instagram,
+            x: post.x,
+            unixTimestamp: post.unixTimestamp,
+        };
 
-        // // Convert date and time to combined unix timestamp
+        // Convert date and time to combined unix timestamp
         // const date = combineDateAndTime(post.date, post.time);
         // const unixTimestamp = Math.floor(date.getTime() / 1000);
         // schedulePostRequest.unixTimestamp = unixTimestamp;
 
-        // // Check if time is at least 15 minutes in the future
+        // Check if time is at least 15 minutes in the future
         // if (!checkTime(date)) {
         //     alert("Please choose a time at least 15 minutes in the future.");
         //     return;
         // }
 
-        // try {
-        //     const res = await fetch(`/api/users/${session.user.id}/posts`, {
-        //         method: "POST",
-        //         headers: {
-        //             "Content-Type": "application/json",
-        //         },
-        //         body: JSON.stringify(schedulePostRequest),
-        //     });
+        try {
+            const res = await fetch(`/api/users/${session.user.id}/posts`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(schedulePostRequest),
+            });
 
-        //     const data = await res.json();
+            const data = await res.json();
 
-        //     if (data.error) {
-        //         console.log(data);
-        //         return;
-        //     }
+            if (data.error) {
+                console.log(data);
+                return;
+            }
 
-        //     router.push("/");
-        // } catch (e) {
-        //     console.log(e);
-        // }
+            router.push("/");
+        } catch (e) {
+            console.log(e);
+        }
     };
 
     useEffect(() => {

@@ -5,7 +5,7 @@ export const submitInstagramPosts = async (
     userId: string,
     schedulePostRequest: SchedulePostRequest,
 ) => {
-    for (const page of schedulePostRequest.igPages) {
+    for (const page of schedulePostRequest.instagram) {
         const igPost = {
             content: schedulePostRequest.content,
             image: schedulePostRequest.image,
@@ -15,7 +15,7 @@ export const submitInstagramPosts = async (
             social: "instagram",
         } as IInstagramPost & { social: "instagram" };
 
-        const json = await postToInstagram(userId, igPost);
+        const json = await createInstagramPostJob(userId, igPost);
         if (json.error) {
             console.log(json.error);
             return new Response(JSON.stringify({ error: json.error }), { status: 500 });
@@ -25,7 +25,10 @@ export const submitInstagramPosts = async (
     return new Response(JSON.stringify({ success: true }), { status: 201 });
 };
 
-const postToInstagram = async (userId: string, post: IInstagramPost & { social: "instagram" }) => {
+const createInstagramPostJob = async (
+    userId: string,
+    post: IInstagramPost & { social: "instagram" },
+) => {
     const response = await fetch("http://localhost:3001/schedule-job", {
         method: "POST",
         headers: {

@@ -5,7 +5,7 @@ export const submitTwitterPosts = async (
     userId: string,
     schedulePostRequest: SchedulePostRequest,
 ) => {
-    for (const page of schedulePostRequest.xPages) {
+    for (const page of schedulePostRequest.x) {
         const xPost = {
             content: schedulePostRequest.content,
             image: schedulePostRequest.image,
@@ -15,7 +15,7 @@ export const submitTwitterPosts = async (
             social: "twitter",
         } as IXPost & { social: "twitter" };
 
-        const json = await postToTwitter(userId, xPost);
+        const json = await createTwitterPostJob(userId, xPost);
         if (json.error) {
             console.log(json.error);
             return new Response(JSON.stringify({ error: json.error }), { status: 500 });
@@ -25,7 +25,7 @@ export const submitTwitterPosts = async (
     return new Response(JSON.stringify({ success: true }), { status: 201 });
 };
 
-const postToTwitter = async (userId: string, post: IXPost & { social: "twitter" }) => {
+const createTwitterPostJob = async (userId: string, post: IXPost & { social: "twitter" }) => {
     const response = await fetch("http://localhost:3001/schedule-job", {
         method: "POST",
         headers: {

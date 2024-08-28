@@ -31,7 +31,7 @@ const createInstagramMediaContainer = async (post) => {
 /**
  * Publishes a post to Instagram
  */
-const publishToInstagram = async (post: any) => {
+const publishInstagramPost = async (post: any) => {
     const createContainerJson = await createInstagramMediaContainer(post);
     if (createContainerJson.error) {
         console.error(createContainerJson.error);
@@ -61,8 +61,8 @@ const publishToInstagram = async (post: any) => {
 /**
  * Publishes a post to Instagram.
  */
-const submitInstagramPost = async (post) => {
-    const json = await publishToInstagram(post);
+const submitInstagramPost = async (post: any) => {
+    const json = await publishInstagramPost(post);
 
     if (json.error) {
         console.log(json.error);

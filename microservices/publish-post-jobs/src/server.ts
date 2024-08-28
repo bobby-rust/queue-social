@@ -8,8 +8,11 @@ import XPage from "../../../models/XPage";
 import XPost from "../../../models/XPost";
 import InstagramPost from "../../../models/InstagramPost";
 import InstagramPage from "../../../models/InstagramPage";
+import FacebookPost from "../../../models/FacebookPost";
+import FacebookPage from "../../../models/FacebookPage";
 import submitInstagramPost from "./publishToInstagram";
 import submitTwitterPost from "./publishToTwitter";
+import submitFacebookPost from "./publishToFacebook";
 
 // This is needed to register the models with mongoose...
 User;
@@ -17,6 +20,8 @@ XPage;
 XPost;
 InstagramPost;
 InstagramPage;
+FacebookPost;
+FacebookPage;
 
 dotenv.config();
 
@@ -41,6 +46,12 @@ const agenda = new Agenda.Agenda({
     db: {
         address: process.env.MONGODB_URI!,
     },
+});
+
+agenda.define("publish facebook post", async (job) => {
+    console.log("Publishing post", job.attrs.data);
+    const response = await submitFacebookPost(job.attrs.data);
+    return await response.json();
 });
 
 agenda.define("publish instagram post", async (job) => {
@@ -85,13 +96,12 @@ app.listen(PORT, async () => {
 app.post("/schedule-job", async (req, res) => {
     const { userId, content, image, link, page, unixTimestamp, social } = req.body;
 
-    agenda.schedule(new Date(), `publish ${social} post`, {
+    agenda.schedule(new Date(unixTimestamp * 1000), `publish ${social} post`, {
         userId: userId,
         content: content,
         image: image,
         link: link,
         page: page,
-        unixTimestamp: unixTimestamp,
     });
 
     return res.status(201).json({ success: true, message: "Job scheduled" });
