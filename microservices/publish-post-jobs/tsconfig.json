@@ -13,6 +13,6 @@
         "noImplicitAny": false,
         "moduleDetection": "force"
     },
-    "include": ["src/**/*.ts"],
+    "include": ["src/**/*"],
     "exclude": ["node_modules"]
 }
