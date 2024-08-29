@@ -8,7 +8,7 @@ export interface IXPost extends mongoose.Document {
     image: { fileUrl: string; fileId: string };
     link: string;
     page: XPage;
-    unixTimestamp: number;
+    date: Date;
 }
 
 export const xPostSchema = new mongoose.Schema<IXPost>({
@@ -18,7 +18,7 @@ export const xPostSchema = new mongoose.Schema<IXPost>({
     image: { fileUrl: { type: String }, fileId: { type: String } },
     link: { type: String },
     page: { type: mongoose.Schema.Types.ObjectId, ref: "XPage" },
-    unixTimestamp: { type: Number },
+    date: { type: Date },
 });
 
 export default mongoose.models.XPost || mongoose.model("XPost", xPostSchema);

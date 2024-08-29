@@ -7,7 +7,7 @@ export interface IFacebookPost extends mongoose.Document {
     image: { fileUrl: string; fileId: string };
     link: string;
     page: FacebookPage;
-    unixTimestamp: number;
+    date: Date;
 }
 
 export const facebookPostSchema = new mongoose.Schema<IFacebookPost>({
@@ -16,7 +16,7 @@ export const facebookPostSchema = new mongoose.Schema<IFacebookPost>({
     image: { fileUrl: { type: String }, fileId: { type: String } },
     link: { type: String },
     page: { type: mongoose.Schema.Types.ObjectId, ref: "FacebookPage" },
-    unixTimestamp: { type: Number },
+    date: { type: Date },
 });
 
 export default mongoose.models.FacebookPost || mongoose.model("FacebookPost", facebookPostSchema);

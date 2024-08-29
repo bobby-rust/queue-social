@@ -11,7 +11,7 @@ export const submitTwitterPosts = async (
             image: schedulePostRequest.image,
             link: schedulePostRequest.link,
             page: page,
-            unixTimestamp: schedulePostRequest.unixTimestamp,
+            date: schedulePostRequest.date,
             social: "twitter",
         } as IXPost & { social: "twitter" };
 
@@ -41,7 +41,7 @@ const createTwitterPostJob = async (userId: string, post: IXPost & { social: "tw
         image: post.image,
         link: post.link,
         page: post.page,
-        unixTimestamp: post.unixTimestamp,
+        date: post.date,
         userId: userId,
     });
 

@@ -10,5 +10,5 @@ export interface SchedulePostRequest {
     facebook: FacebookPage[];
     instagram: InstagramPage[];
     x: XPage[];
-    unixTimestamp: number;
+    date: Date;
 }

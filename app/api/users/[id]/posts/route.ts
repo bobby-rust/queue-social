@@ -8,6 +8,7 @@ import FacebookPost from "@/models/FacebookPost";
 
 export async function POST(request: Request, { params: params }: { params: { id: string } }) {
     const schedulePostRequest: SchedulePostRequest = await request.json();
+    console.log("Got schedule post request in next api: ", schedulePostRequest);
 
     // Post to Facebook
     const fbResponse = await submitFacebookPosts(params.id, schedulePostRequest);

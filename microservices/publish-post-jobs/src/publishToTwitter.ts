@@ -18,8 +18,17 @@ const submitTwitterPost = async (post: any) => {
         accessSecret: xPage.accessTokenSecret!,
     });
 
-    const response = await client.v2.tweet(post.content);
-    return response;
+    if (post.image) {
+        const response = await fetch(post.image.fileUrl);
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const mediaId = await client.v1.uploadMedia(buffer, { mimeType: "image/png" });
+        const tweet = await client.v2.tweet(post.content, { media: { media_ids: [mediaId] } });
+        return tweet;
+    } else {
+        const response = await client.v2.tweet(post.content);
+        return response;
+    }
 };
 
 export default submitTwitterPost;

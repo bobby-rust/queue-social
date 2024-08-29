@@ -5,6 +5,7 @@ const createFacebookPostJob = async (
     userId: string,
     post: IFacebookPost & { social: "facebook" },
 ) => {
+    console.log("creating post job: ", post);
     const response = await fetch("http://localhost:3001/schedule-job", {
         method: "POST",
         headers: {
@@ -20,7 +21,7 @@ const createFacebookPostJob = async (
         image: post.image,
         link: post.link,
         page: post.page,
-        unixTimestamp: post.unixTimestamp,
+        date: post.date,
         userId: userId,
     });
     return fbJson;
@@ -36,10 +37,11 @@ export const submitFacebookPosts = async (
             image: schedulePostRequest.image,
             link: schedulePostRequest.link,
             page: page,
-            unixTimestamp: schedulePostRequest.unixTimestamp,
+            date: schedulePostRequest.date,
             social: "facebook",
         } as IFacebookPost & { social: "facebook" };
 
+        console.log("Facebook post: ", fbPost);
         const json = await createFacebookPostJob(userId, fbPost);
         if (json.error) {
             console.log(json.error);

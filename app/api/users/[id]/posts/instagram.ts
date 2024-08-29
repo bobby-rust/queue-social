@@ -11,7 +11,7 @@ export const submitInstagramPosts = async (
             image: schedulePostRequest.image,
             link: schedulePostRequest.link,
             page: page,
-            unixTimestamp: schedulePostRequest.unixTimestamp,
+            date: schedulePostRequest.date,
             social: "instagram",
         } as IInstagramPost & { social: "instagram" };
 
@@ -44,7 +44,7 @@ const createInstagramPostJob = async (
         image: post.image,
         link: post.link,
         page: post.page,
-        unixTimestamp: post.unixTimestamp,
+        date: post.date,
         userId: userId,
     });
 

@@ -10,8 +10,8 @@ import { UploadDropzone } from "@/utils/uploadthing";
 import getPages from "@/lib/getPages";
 import PageIcon from "./PageIcon";
 import { SchedulePostRequest } from "@/types/types";
-import Image from "next/image";
 import DatePicker from "./DatePicker";
+import { fromZonedTime } from "date-fns-tz";
 
 interface SchedulePostForm {
     content: string;
@@ -48,45 +48,22 @@ const CreatePostSchema = Yup.object().shape({
     unixTimestamp: Yup.number(),
 });
 
-function combineDateAndTime(day: Date, time: Date) {
-    const year = day.getUTCFullYear();
-    const month = day.getUTCMonth();
-    const date = day.getUTCDate();
-
-    const hours = time.getUTCHours();
-    const minutes = time.getUTCMinutes();
-    const seconds = time.getUTCSeconds();
-
-    // Create a new Date object in UTC
-    const combinedDate = new Date(Date.UTC(year, month, date, hours, minutes, seconds));
+function combineDateAndTime(date: Date, hours: number, minutes: number, am: boolean) {
+    console.log("date: ", date, "hours: ", hours, "minutes: ", minutes);
+    if (am && hours === 12) {
+        hours = 0;
+    } else if (!am && hours !== 12) {
+        hours += 12;
+    }
+    console.log("Hours after editing: ", hours);
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    console.log("timezone: ", timezone);
+    const combinedDate = fromZonedTime(
+        new Date(date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes, 0),
+        timezone,
+    );
+    console.log("combinedDate: ", combinedDate);
     return combinedDate;
-}
-
-// function checkTime(time: Date) {
-//     const now = new Date();
-//     const nowUTC = Date.UTC(
-//         now.getUTCFullYear(),
-//         now.getUTCMonth(),
-//         now.getUTCDate(),
-//         now.getUTCHours(),
-//         now.getUTCMinutes(),
-//         now.getUTCSeconds(),
-//     );
-
-//     console.log("nowUTC: ", nowUTC);
-//     console.log("time.getTime(): ", time.getTime());
-//     const diff = (time.getTime() - nowUTC) / 60000;
-//     console.log("diff: ", diff);
-//     return diff >= 15;
-// }
-function checkTime(time: Date) {
-    const now = new Date();
-    const diff = (time.getTime() - now.getTime()) / 60000;
-
-    console.log("now: ", now);
-    console.log("time: ", time.getTime());
-    console.log("diff: ", diff);
-    return diff >= 15;
 }
 
 export default function CreatePost() {
@@ -106,19 +83,6 @@ export default function CreatePost() {
         router.push("/api/auth/signin");
     }
 
-    // function findPagesFromNames(social: string, pagesNames: string[]) {
-    //     switch (social) {
-    //         case "facebook":
-    //             return pages.facebook.filter((page: any) => pagesNames.includes(page.name));
-    //         case "instagram":
-    //             return pages.instagram.filter((page: any) => pagesNames.includes(page.name));
-    //         case "x":
-    //             return pages.x.filter((page: any) => pagesNames.includes(page.name));
-    //         default:
-    //             return [];
-    //     }
-    // }
-
     const submitPost = async (post: SchedulePostForm) => {
         console.log("Submitting post: ", post);
         setDisableSubmit(true);
@@ -130,19 +94,8 @@ export default function CreatePost() {
             facebook: post.facebook,
             instagram: post.instagram,
             x: post.x,
-            unixTimestamp: post.unixTimestamp,
+            date: combineDateAndTime(post.date, post.hour, post.minute, post.am),
         };
-
-        // Convert date and time to combined unix timestamp
-        // const date = combineDateAndTime(post.date, post.time);
-        // const unixTimestamp = Math.floor(date.getTime() / 1000);
-        // schedulePostRequest.unixTimestamp = unixTimestamp;
-
-        // Check if time is at least 15 minutes in the future
-        // if (!checkTime(date)) {
-        //     alert("Please choose a time at least 15 minutes in the future.");
-        //     return;
-        // }
 
         try {
             const res = await fetch(`/api/users/${session.user.id}/posts`, {

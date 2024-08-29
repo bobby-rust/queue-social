@@ -8,7 +8,7 @@ export interface IInstagramPost extends mongoose.Document {
     image: { fileUrl: string; fileId: string };
     link: string;
     page: InstagramPage;
-    unixTimestamp: number;
+    date: Date;
 }
 
 export const instagramPostSchema = new mongoose.Schema<IInstagramPost>({
@@ -18,7 +18,7 @@ export const instagramPostSchema = new mongoose.Schema<IInstagramPost>({
     image: { fileUrl: { type: String }, fileId: { type: String } },
     link: { type: String },
     page: { type: mongoose.Schema.Types.ObjectId, ref: "InstagramPage" },
-    unixTimestamp: { type: Number },
+    date: { type: Date },
 });
 
 export default mongoose.models.InstagramPost ||

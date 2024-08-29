@@ -94,9 +94,9 @@ app.listen(PORT, async () => {
 });
 
 app.post("/schedule-job", async (req, res) => {
-    const { userId, content, image, link, page, unixTimestamp, social } = req.body;
-
-    agenda.schedule(new Date(unixTimestamp * 1000), `publish ${social} post`, {
+    const { userId, content, image, link, page, date, social } = req.body;
+    console.log("Got request to schedule job: ", req.body);
+    agenda.schedule(date, `publish ${social} post`, {
         userId: userId,
         content: content,
         image: image,
@@ -104,5 +104,6 @@ app.post("/schedule-job", async (req, res) => {
         page: page,
     });
 
+    console.log(`Job scheduled for ${date}`);
     return res.status(201).json({ success: true, message: "Job scheduled" });
 });
