@@ -9,7 +9,7 @@ type Props = {
     social: string;
     page: any;
     checked: boolean;
-    setChecked: React.Dispatch<React.SetStateAction<boolean>>;
+    setChecked: any;
 };
 
 const PageIcon = (props: Props) => {

@@ -6,28 +6,16 @@ import * as Yup from "yup";
 import { Link } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { UploadDropzone } from "@/utils/uploadthing";
 import getPages from "@/lib/getPages";
 import PageIcon from "./PageIcon";
 import { SchedulePostRequest } from "@/types/types";
 import DatePicker from "./DatePicker";
 import { fromZonedTime } from "date-fns-tz";
-
-interface SchedulePostForm {
-    content: string;
-    image: { fileUrl: string; fileId: string };
-    link: string;
-    facebook: any[];
-    instagram: any[];
-    x: any[];
-    date: Date;
-    hour: number;
-    minute: number;
-    am: boolean;
-    unixTimestamp: number;
-    [key: string]: any;
-}
-
+import PostPreviews from "./PostPreviews";
+import type { SchedulePostForm } from "@/types/types";
+import type { FormikState } from "formik";
 interface Pages {
     facebook: any;
     instagram: any;
@@ -75,8 +63,9 @@ export default function CreatePost() {
         x: [],
     });
 
+    const [postPreviewRendered, setPostPreviewRendered] = useState(false);
     const [disableSubmit, setDisableSubmit] = useState(false);
-
+    const [imagePreview, setImagePreview] = useState<string[]>([]);
     const router = useRouter();
     if (!pages) router.push("/connect");
     if (!session) {
@@ -122,20 +111,30 @@ export default function CreatePost() {
     useEffect(() => {
         async function fetchPages() {
             const pages = await getPages(session.user?.id);
+            Object.entries(pages).map(([social, pages]) => {
+                pages.forEach((page: any) => {
+                    page.selected = false;
+                });
+            });
             setPages(pages);
         }
 
         fetchPages();
     }, []);
 
+    const handleImageLoad = (event: React.SyntheticEvent<HTMLImageElement>) => {
+        const target = event.currentTarget;
+        const { width, height } = target;
+        console.log(width, height);
+    };
+
     useEffect(() => {
         console.log("PAGES: ", pages);
     }, [pages]);
 
     return (
-        <div className="flex flex-col items-center min-h-[70vh] p-16">
+        <div className="flex justify-center min-h-[70vh] p-16 gap-4">
             <div className="flex flex-col gap-4 justify-center items-center bg-base-200 p-12 rounded-lg shadow-lg w-3/5">
-                <h1 className="text-3xl bold">Create Post</h1>
                 <Formik<SchedulePostForm>
                     initialValues={{
                         content: "",
@@ -158,163 +157,201 @@ export default function CreatePost() {
                         resetForm();
                     }}
                 >
-                    {({ setFieldValue, errors, values, touched }) => (
-                        <Form className="flex flex-col gap-4 w-full">
-                            <div className="form-control w-full min-h-80">
-                                <div className="flex gap-4">
-                                    {Object.entries(pages).map(([social, pages]) => (
-                                        <>
-                                            {pages.map((page: any) => (
-                                                <PageIcon
-                                                    social={social}
-                                                    key={page.id}
-                                                    page={page}
-                                                    checked={page.selected}
-                                                    setChecked={(pageToSelect: any) => {
-                                                        console.log("pageToSelect: ", pageToSelect);
-                                                        // If page is already selected, unselect it
-                                                        !values[social].includes(pageToSelect)
-                                                            ? setFieldValue(social, [
-                                                                  ...values[social],
-                                                                  pageToSelect,
-                                                              ])
-                                                            : // If page is not selected, select it
-                                                              setFieldValue(
-                                                                  social,
-                                                                  values[social].filter(
-                                                                      (page: any) =>
-                                                                          page.id !==
-                                                                          pageToSelect.id,
-                                                                  ),
-                                                              );
-                                                        page.selected = !page.selected;
+                    {({ setFieldValue, errors, values, touched }) => {
+                        useEffect(() => {
+                            console.log("Formik values changed: ", values);
+                        }, [values]);
+                        return (
+                            <Form className="flex gap-4 justify-center w-full">
+                                <div className="flex flex-col">
+                                    <h1 className="font-bold text-2xl">Create Post</h1>
+                                    <div className="divider before:h-[1px] after:h-[1px] m-0"></div>
+                                    <div className="form-control w-full min-h-80">
+                                        <div className="flex gap-4">
+                                            {Object.entries(pages).map(([social, pages]) => (
+                                                <div className="flex gap-4">
+                                                    {pages.map((page: any) => (
+                                                        <PageIcon
+                                                            social={social}
+                                                            key={page.id}
+                                                            page={page}
+                                                            checked={page.selected}
+                                                            setChecked={(pageToToggle: any) => {
+                                                                // We can edit pages while we iterate through it because we do not change its length.
+                                                                console.log(
+                                                                    "value[social: ",
+                                                                    values[social],
+                                                                );
+
+                                                                // Create a copy of the state to mutate
+                                                                const newPages = [...pages];
+                                                                console.log(
+                                                                    "New pages: ",
+                                                                    newPages,
+                                                                );
+                                                                // Find the index of the page to toggle
+
+                                                                const index = newPages[
+                                                                    social
+                                                                ].indexOf(
+                                                                    (page) =>
+                                                                        page.id === pageToToggle.id,
+                                                                );
+                                                                // Toggle the page
+                                                                newPages[social][index].selected =
+                                                                    !newPages[index].selected;
+                                                                // Update the state
+                                                                setPages(newPages);
+                                                            }}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            ))}
+                                        </div>
+                                        {errors.content && touched.content ? (
+                                            <div
+                                                className="tooltip tooltip-right tooltip-error tooltip-open w-full"
+                                                data-tip={errors.content}
+                                            >
+                                                <label className="label">
+                                                    <span className="label-text">Content</span>
+                                                </label>
+                                                <Field
+                                                    id="content"
+                                                    name="content"
+                                                    type="textarea"
+                                                    placeholder="Write your post here"
+                                                    as="textarea"
+                                                    className="textarea textarea-bordered textarea-lg w-full min-h-80"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="w-full min-h-80">
+                                                <label className="label">
+                                                    <span className="label-text">Content</span>
+                                                </label>
+                                                <Field
+                                                    id="content"
+                                                    name="content"
+                                                    type="textarea"
+                                                    placeholder="Write your post here"
+                                                    as="textarea"
+                                                    className="textarea textarea-bordered textarea-lg w-full min-h-80"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <div className="label">
+                                            <span className="label-text">Link (optional)</span>
+                                        </div>
+                                        {errors.link && touched.link ? (
+                                            <div
+                                                className="tooltip tooltip-right tooltip-error tooltip-open"
+                                                data-tip={errors.link}
+                                            >
+                                                <label className="input input-bordered flex items-center gap-2">
+                                                    <Link />
+                                                    <Field
+                                                        id="link"
+                                                        name="link"
+                                                        type="text"
+                                                        className="grow"
+                                                        placeholder="Add a link to your post here"
+                                                    />
+                                                </label>
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                <label className="input input-bordered flex items-center gap-2">
+                                                    <Link />
+                                                    <Field
+                                                        id="link"
+                                                        name="link"
+                                                        type="text"
+                                                        className="grow"
+                                                        placeholder="Add a link to your post here"
+                                                    />
+                                                </label>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="form-control w-full max-w-xs">
+                                        {errors.image && touched.image ? (
+                                            <div
+                                                className="tooltip tooltip-right tooltip-error tooltip-open"
+                                                data-tip={errors.image}
+                                            >
+                                                <label className="label">
+                                                    <span className="label-text">
+                                                        Add an image to your post (optional)
+                                                    </span>
+                                                </label>
+                                                <Field
+                                                    id="image"
+                                                    name="image"
+                                                    type="file"
+                                                    placeholder="Image"
+                                                    className="file-input file-input-bordered"
+                                                ></Field>
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                <label className="label">
+                                                    <span className="label-text">
+                                                        Add an image to your post (optional)
+                                                    </span>
+                                                </label>
+                                                <UploadDropzone
+                                                    endpoint="imageUploader"
+                                                    onClientUploadComplete={(res: any) => {
+                                                        setFieldValue("image", {
+                                                            fileUrl: res[0].serverData.fileUrl,
+                                                            fileId: res[0].serverData.fileId,
+                                                        });
+                                                        setImagePreview([
+                                                            ...imagePreview,
+                                                            res[0].serverData.fileUrl,
+                                                        ]);
+                                                        alert("Upload complete");
+                                                    }}
+                                                    onUploadError={(e: Error) => {
+                                                        console.error(e.message);
+                                                        alert("Upload Error");
                                                     }}
                                                 />
-                                            ))}
-                                        </>
-                                    ))}
+
+                                                <div className="flex">
+                                                    {imagePreview.map((image: string) => (
+                                                        <div className="flex">
+                                                            <Image
+                                                                src={image}
+                                                                width={100}
+                                                                height={100}
+                                                                alt="Uploaded Image"
+                                                                onLoad={handleImageLoad}
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <DatePicker setFieldValue={setFieldValue} formState={values} />
+                                    <button
+                                        type="submit"
+                                        className={`btn btn-primary w-1/5 ${disableSubmit ? "btn-disabled" : ""}`}
+                                    >
+                                        {disableSubmit && (
+                                            <span className="loading loading-spinner"></span>
+                                        )}
+                                        {disableSubmit ? "Submitting Post..." : "Submit"}
+                                    </button>
                                 </div>
-                                {errors.content && touched.content ? (
-                                    <div
-                                        className="tooltip tooltip-right tooltip-error tooltip-open w-full"
-                                        data-tip={errors.content}
-                                    >
-                                        <label className="label">
-                                            <span className="label-text">Content</span>
-                                        </label>
-                                        <Field
-                                            id="content"
-                                            name="content"
-                                            type="textarea"
-                                            placeholder="Write your post here"
-                                            as="textarea"
-                                            className="textarea textarea-bordered textarea-lg w-full min-h-80"
-                                        />
-                                    </div>
-                                ) : (
-                                    <div className="w-full min-h-80">
-                                        <label className="label">
-                                            <span className="label-text">Content</span>
-                                        </label>
-                                        <Field
-                                            id="content"
-                                            name="content"
-                                            type="textarea"
-                                            placeholder="Write your post here"
-                                            as="textarea"
-                                            className="textarea textarea-bordered textarea-lg w-full min-h-80"
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                            <div>
-                                <div className="label">
-                                    <span className="label-text">Link (optional)</span>
-                                </div>
-                                {errors.link && touched.link ? (
-                                    <div
-                                        className="tooltip tooltip-right tooltip-error tooltip-open"
-                                        data-tip={errors.link}
-                                    >
-                                        <label className="input input-bordered flex items-center gap-2">
-                                            <Link />
-                                            <Field
-                                                id="link"
-                                                name="link"
-                                                type="text"
-                                                className="grow"
-                                                placeholder="Add a link to your post here"
-                                            />
-                                        </label>
-                                    </div>
-                                ) : (
-                                    <div>
-                                        <label className="input input-bordered flex items-center gap-2">
-                                            <Link />
-                                            <Field
-                                                id="link"
-                                                name="link"
-                                                type="text"
-                                                className="grow"
-                                                placeholder="Add a link to your post here"
-                                            />
-                                        </label>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="form-control w-full max-w-xs">
-                                {errors.image && touched.image ? (
-                                    <div
-                                        className="tooltip tooltip-right tooltip-error tooltip-open"
-                                        data-tip={errors.image}
-                                    >
-                                        <label className="label">
-                                            <span className="label-text">
-                                                Add an image to your post (optional)
-                                            </span>
-                                        </label>
-                                        <Field
-                                            id="image"
-                                            name="image"
-                                            type="file"
-                                            placeholder="Image"
-                                            className="file-input file-input-bordered"
-                                        ></Field>
-                                    </div>
-                                ) : (
-                                    <div>
-                                        <label className="label">
-                                            <span className="label-text">
-                                                Add an image to your post (optional)
-                                            </span>
-                                        </label>
-                                        <UploadDropzone
-                                            endpoint="imageUploader"
-                                            onClientUploadComplete={(res: any) => {
-                                                setFieldValue("image", {
-                                                    fileUrl: res[0].serverData.fileUrl,
-                                                    fileId: res[0].serverData.fileId,
-                                                });
-                                                alert("Upload complete");
-                                            }}
-                                            onUploadError={(e: Error) => {
-                                                console.error(e.message);
-                                                alert("Upload Error");
-                                            }}
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                            <DatePicker setFieldValue={setFieldValue} formState={values} />
-                            <button
-                                type="submit"
-                                className={`btn btn-primary w-1/5 ${disableSubmit ? "btn-disabled" : ""}`}
-                            >
-                                {disableSubmit && <span className="loading loading-spinner"></span>}
-                                {disableSubmit ? "Submitting Post..." : "Submit"}
-                            </button>
-                        </Form>
-                    )}
+                                <PostPreviews />
+                            </Form>
+                        );
+                    }}
                 </Formik>
             </div>
         </div>

@@ -65,7 +65,7 @@ export default async function NavMenu({ children }: { children: React.ReactNode 
                                 />
                                 <h1 className="font-bold">QueueSocial</h1>
                                 <div className="divider divider-horizontal"></div>
-                                <div className="text-xs">your social media, on autopilot</div>
+                                <div className="text-xs">Your social media, on autopilot.</div>
                             </div>
                         </Link>
                     </div>
