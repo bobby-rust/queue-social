@@ -16,6 +16,7 @@ import { fromZonedTime } from "date-fns-tz";
 import PostPreviews from "./PostPreviews";
 import type { SchedulePostForm } from "@/types/types";
 import type { FormikState } from "formik";
+
 interface Pages {
     facebook: any;
     instagram: any;
@@ -54,15 +55,10 @@ function combineDateAndTime(date: Date, hours: number, minutes: number, am: bool
     return combinedDate;
 }
 
-export default function CreatePost() {
+export default async function CreatePost() {
     const { data: session }: any = useSession();
 
-    const [pages, setPages] = useState<Pages>({
-        facebook: [],
-        instagram: [],
-        x: [],
-    });
-
+    let pages = await fetchPages();
     const [postPreviewRendered, setPostPreviewRendered] = useState(false);
     const [disableSubmit, setDisableSubmit] = useState(false);
     const [imagePreview, setImagePreview] = useState<string[]>([]);
@@ -108,19 +104,21 @@ export default function CreatePost() {
         }
     };
 
-    useEffect(() => {
-        async function fetchPages() {
-            const pages = await getPages(session.user?.id);
-            Object.entries(pages).map(([social, pages]) => {
-                pages.forEach((page: any) => {
-                    page.selected = false;
-                });
+    async function fetchPages() {
+        const pages = await getPages(session.user?.id);
+        Object.entries(pages).map(([_, pages]: any) => {
+            pages.forEach((page: any) => {
+                page.selected = false;
             });
-            setPages(pages);
-        }
+        });
 
-        fetchPages();
-    }, []);
+        console.log("Pages in fetchPages: ", pages);
+        return pages;
+    }
+    // useEffect(() => {
+
+    //     fetchPages();
+    // }, []);
 
     const handleImageLoad = (event: React.SyntheticEvent<HTMLImageElement>) => {
         const target = event.currentTarget;
