@@ -20,12 +20,12 @@ import createInstagramPages from "@/lib/createInstagramPages";
 const dbAdapter = MongoDBAdapter(clientPromise);
 
 export const authOptions = {
-    debug: true,
+    // debug: true,
     adapter: {
         ...dbAdapter,
         async createUser(user: any) {
             await dbConnect();
-
+            console.log("Running create user with params: ", user);
             const newUser = {
                 id: new Types.ObjectId().toString(),
                 name: user.name,
@@ -50,6 +50,7 @@ export const authOptions = {
                 password: { label: "Password", type: "password" },
             },
             async authorize(credentials: any) {
+                console.log("Running authorize with params: ", credentials);
                 await dbConnect();
                 const user = await User.findOne({ email: credentials.email });
                 if (!user) {
@@ -74,21 +75,25 @@ export const authOptions = {
     ],
     callbacks: {
         async signIn(request: any) {
+            console.log("Running signIn with params: ", request);
             await dbConnect();
             if (request.account.provider === "facebook_business") {
-                const session = await getServerSession(authOptions);
-                if (session?.user?.id) {
-                    const pages = await getFacebookPages(request.account.access_token);
-                    await createFacebookPages(session.user.id, pages.data);
-                }
+                // TODO: update pages profile pictures on sign in here. This is because the url for images changes and is not reliable for long-term storage
+                const fbPages = await getFacebookPages(
+                    request.profile.id,
+                    request.account.access_token,
+                );
+                console.log("Got fb pages while signing in: ", fbPages);
             } else if (request.account.provider === "instagram_business") {
-                const session = await getServerSession(authOptions);
-                if (session?.user?.id) {
-                    const fbPages = await FacebookPage.find({ userId: session.user.id });
-                    createInstagramPages(session.user?.id, request.account.access_token, fbPages);
+                if (request?.profile?.id) {
+                    const fbPages = await FacebookPage.find({ userId: request.user.id });
+                    createInstagramPages(
+                        request.profile?.id,
+                        request.account.access_token,
+                        fbPages,
+                    );
                 }
             } else if (request.account.provider === "twitter") {
-                console.log("TWITTER REQUEST: ", request);
                 const oauthToken = request.account.oauth_token;
                 const oauthTokenSecret = request.account.oauth_token_secret;
                 console.log(oauthToken, oauthTokenSecret);
@@ -112,37 +117,49 @@ export const authOptions = {
 
             return true;
         },
-        async redirect({ url, baseUrl }: any) {
-            return baseUrl;
+        async redirect(params: any) {
+            // console.log("Running redirect with params: ", params);
+            return params.baseUrl;
         },
-        async jwt({ token }: any) {
-            await dbConnect();
-            const user = await User.findOne({ email: token.email });
-            if (user) {
-                token.user_id = user._id.toString();
-                token.first_name = user.first_name;
-                token.last_name = user.last_name;
-                token.credits = user.credits;
-                token.subscription_type = user.subscription_type;
-                // token.image = user.image;
+        async jwt({ token, account }: any) {
+            if (account) {
+                token.accessToken = account.access_token;
             }
+
+            // await dbConnect();
+            // const user = await User.findOne({ email: params.token.email });
+            // if (user) {
+            //     params.token.user_id = user._id.toString();
+            //     params.token.first_name = user.first_name;
+            //     params.token.last_name = user.last_name;
+            //     params.token.credits = user.credits;
+            //     params.token.subscription_type = user.subscription_type;
+            // const pages = await getFacebookPages(request.account.access_token);
+            // console.log("PAGES in JWT: ", pages);
+            // await createFacebookPages(user._id.toString(), pages.data);
+
+            // token.image = user.image;
+            // }
             return token;
         },
         async session({ session, token }: any) {
-            if (session) {
-                session.user.id = token.user_id;
-                session.user.credits = token.credits;
-                session.user.subscription_type = token.subscription_type;
-                session.user.first_name = token.first_name;
-                session.user.last_name = token.last_name;
-                // If I set this to "token.image", it just gets set to "token.picture" anyways ??
-                session.user.image = token.picture; // I have no idea how it gets set to "picture" instead of "image"
+            session.accessToken = token.accessToken;
 
-                // Delete old posts from db
-                const deleted = await removeOldPosts(session.user.id);
-                console.log("Deleted old posts: ", deleted);
-            }
+            // if (session) {
+            //     session.user.id = token.user_id;
+            //     session.user.credits = token.credits;
+            //     session.user.subscription_type = token.subscription_type;
+            //     session.user.first_name = token.first_name;
+            //     session.user.last_name = token.last_name;
+            //     // If I set this to "token.image", it just gets set to "token.picture" anyways ??
+            //     session.user.image = token.picture; // I have no idea how it gets set to "picture" instead of "image"
 
+            //     // Delete old posts from db
+            //     const deleted = await removeOldPosts(session.user.id);
+            //     console.log("Deleted old posts: ", deleted);
+            // }
+
+            // return session;
             return session;
         },
     },

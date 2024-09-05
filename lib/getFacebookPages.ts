@@ -1,9 +1,9 @@
-export default async function getFacebookPages(accessToken: string) {
-    const getFbPagesUrl = `https://graph.facebook.com/v20.0/me/accounts?access_token=${accessToken}`;
+export default async function getFacebookPages(userId: string, accessToken: string) {
+    const getFbPagesUrl = `https://graph.facebook.com/v20.0/${userId}/accounts?access_token=${accessToken}`;
     const response = await fetch(getFbPagesUrl);
 
     const pages = await response.json();
-
+    console.log("Response from facebook for get pages: ", pages);
     for (const page of pages.data) {
         const url = `https://graph.facebook.com/v20.0/${page.id}?access_token=${accessToken}&fields=picture`;
         const response = await fetch(url);

@@ -16,9 +16,10 @@ const FacebookBusinessProvider = {
     userinfo: {
         url: "https://graph.facebook.com/me",
         params: { fields: "id,name,email,picture" },
-        async request({ tokens, client, provider }: any) {
-            return await client.userinfo(tokens.access_token!, {
-                params: provider.userinfo?.params,
+        async request(params: any) {
+            console.log("running request in facebook provider with params: ", params);
+            return await params.client.userinfo(params.tokens.access_token!, {
+                params: params.provider.userinfo?.params,
             });
         },
     },
@@ -26,6 +27,7 @@ const FacebookBusinessProvider = {
     clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
     allowDangerousEmailAccountLinking: true,
     profile(profile: any) {
+        console.log("Running profile in facebook provider with params: ", profile);
         return {
             id: profile.id,
             name: profile.name,

@@ -15,7 +15,6 @@ import DatePicker from "./DatePicker";
 import { fromZonedTime } from "date-fns-tz";
 import PostPreviews from "./PostPreviews";
 import type { SchedulePostForm } from "@/types/types";
-import type { FormikState } from "formik";
 
 interface Pages {
     facebook: any;
@@ -55,15 +54,19 @@ function combineDateAndTime(date: Date, hours: number, minutes: number, am: bool
     return combinedDate;
 }
 
-export default async function CreatePost() {
+export default function CreatePost() {
     const { data: session }: any = useSession();
 
-    let pages = await fetchPages();
-    const [postPreviewRendered, setPostPreviewRendered] = useState(false);
     const [disableSubmit, setDisableSubmit] = useState(false);
     const [imagePreview, setImagePreview] = useState<string[]>([]);
+    const [pages, setPages] = useState<Pages>({
+        facebook: [],
+        instagram: [],
+        x: [],
+    });
+
     const router = useRouter();
-    if (!pages) router.push("/connect");
+
     if (!session) {
         router.push("/api/auth/signin");
     }
@@ -104,27 +107,25 @@ export default async function CreatePost() {
         }
     };
 
-    async function fetchPages() {
-        const pages = await getPages(session.user?.id);
-        Object.entries(pages).map(([_, pages]: any) => {
-            pages.forEach((page: any) => {
-                page.selected = false;
-            });
-        });
-
-        console.log("Pages in fetchPages: ", pages);
-        return pages;
-    }
-    // useEffect(() => {
-
-    //     fetchPages();
-    // }, []);
-
     const handleImageLoad = (event: React.SyntheticEvent<HTMLImageElement>) => {
         const target = event.currentTarget;
         const { width, height } = target;
         console.log(width, height);
     };
+
+    useEffect(() => {
+        const fetchPages = async () => {
+            const pages = await getPages(session?.user?.id);
+            for (let social of [pages.facebook, pages.instagram, pages.x]) {
+                social.forEach((page: any) => {
+                    page.selected = false;
+                });
+            }
+            setPages(pages);
+        };
+
+        fetchPages();
+    }, []);
 
     useEffect(() => {
         console.log("PAGES: ", pages);
@@ -180,26 +181,6 @@ export default async function CreatePost() {
                                                                     "value[social: ",
                                                                     values[social],
                                                                 );
-
-                                                                // Create a copy of the state to mutate
-                                                                const newPages = [...pages];
-                                                                console.log(
-                                                                    "New pages: ",
-                                                                    newPages,
-                                                                );
-                                                                // Find the index of the page to toggle
-
-                                                                const index = newPages[
-                                                                    social
-                                                                ].indexOf(
-                                                                    (page) =>
-                                                                        page.id === pageToToggle.id,
-                                                                );
-                                                                // Toggle the page
-                                                                newPages[social][index].selected =
-                                                                    !newPages[index].selected;
-                                                                // Update the state
-                                                                setPages(newPages);
                                                             }}
                                                         />
                                                     ))}
