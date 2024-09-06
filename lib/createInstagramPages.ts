@@ -10,10 +10,12 @@ export default async function createInstagramPages(
             `https://graph.facebook.com/v20.0/me?fields=instagram_business_account&access_token=${fbPage.accessToken}`,
         );
         const igJson = await igResponse.json();
+        console.log("IG RESPONSE: ", igJson);
         if (igJson.instagram_business_account) {
             const url = `https://graph.facebook.com/v20.0/${igJson.instagram_business_account.id}?access_token=${accessToken}&fields=username,profile_picture_url`;
             const response = await fetch(url);
             const resJson = await response.json();
+            console.log("resJson: ", resJson);
             const newIgPage = {
                 fbPageId: fbPage.pageId, // facebook page ID, NOT the MongoDB ID
                 name: resJson.username,

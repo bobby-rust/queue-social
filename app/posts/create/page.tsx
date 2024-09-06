@@ -116,6 +116,7 @@ export default function CreatePost() {
     useEffect(() => {
         const fetchPages = async () => {
             const pages = await getPages(session?.user?.id);
+            console.log("Got pages back from api: ", pages);
             for (let social of [pages.facebook, pages.instagram, pages.x]) {
                 social.forEach((page: any) => {
                     page.selected = false;

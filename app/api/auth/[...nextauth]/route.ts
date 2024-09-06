@@ -85,13 +85,11 @@ export const authOptions = {
                 );
                 console.log("Got fb pages while signing in: ", fbPages);
             } else if (request.account.provider === "instagram_business") {
+                console.log("IG sign in request: ", request);
                 if (request?.profile?.id) {
                     const fbPages = await FacebookPage.find({ userId: request.user.id });
-                    createInstagramPages(
-                        request.profile?.id,
-                        request.account.access_token,
-                        fbPages,
-                    );
+                    console.log("Found facebook pages in IG sign in request: ", fbPages);
+                    createInstagramPages(request.user.id, request.account.access_token, fbPages);
                 }
             } else if (request.account.provider === "twitter") {
                 const oauthToken = request.account.oauth_token;
@@ -124,42 +122,34 @@ export const authOptions = {
         async jwt({ token, account }: any) {
             if (account) {
                 token.accessToken = account.access_token;
+                token.pageId = account.providerAccountId;
             }
 
-            // await dbConnect();
-            // const user = await User.findOne({ email: params.token.email });
-            // if (user) {
-            //     params.token.user_id = user._id.toString();
-            //     params.token.first_name = user.first_name;
-            //     params.token.last_name = user.last_name;
-            //     params.token.credits = user.credits;
-            //     params.token.subscription_type = user.subscription_type;
-            // const pages = await getFacebookPages(request.account.access_token);
-            // console.log("PAGES in JWT: ", pages);
-            // await createFacebookPages(user._id.toString(), pages.data);
-
-            // token.image = user.image;
-            // }
+            await dbConnect();
+            const user = await User.findOne({ email: token.email });
+            if (user) {
+                token.user_id = user._id.toString();
+                token.first_name = user.first_name;
+                token.last_name = user.last_name;
+                token.credits = user.credits;
+                token.subscription_type = user.subscription_type;
+            }
             return token;
         },
         async session({ session, token }: any) {
             session.accessToken = token.accessToken;
+            session.user.id = token.user_id;
+            session.user.credits = token.credits;
+            session.user.subscription_type = token.subscription_type;
+            session.user.first_name = token.first_name;
+            session.user.last_name = token.last_name;
+            // If I set this to "token.image", it just gets set to "token.picture" anyways ??
+            session.user.image = token.picture; // I have no idea how it gets set to "picture" instead of "image"
 
-            // if (session) {
-            //     session.user.id = token.user_id;
-            //     session.user.credits = token.credits;
-            //     session.user.subscription_type = token.subscription_type;
-            //     session.user.first_name = token.first_name;
-            //     session.user.last_name = token.last_name;
-            //     // If I set this to "token.image", it just gets set to "token.picture" anyways ??
-            //     session.user.image = token.picture; // I have no idea how it gets set to "picture" instead of "image"
+            // Delete old posts from db
+            const deleted = await removeOldPosts(session.user.id);
+            console.log("Deleted old posts: ", deleted);
 
-            //     // Delete old posts from db
-            //     const deleted = await removeOldPosts(session.user.id);
-            //     console.log("Deleted old posts: ", deleted);
-            // }
-
-            // return session;
             return session;
         },
     },
