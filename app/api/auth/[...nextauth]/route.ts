@@ -8,7 +8,7 @@ import clientPromise from "@/lib/mongodb";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import User from "@/models/User";
 import XPage from "@/models/XPage";
-import { getServerSession, SessionStrategy } from "next-auth";
+import { SessionStrategy } from "next-auth";
 import { Types } from "mongoose";
 import removeOldPosts from "@/lib/removeOldPosts";
 import getFacebookPages from "@/lib/getFacebookPages";
@@ -16,6 +16,7 @@ import createFacebookPages from "@/lib/createFacebookPages";
 import InstagramBusinessProvider from "./InstagramBusinessProvider";
 import FacebookPage from "@/models/FacebookPage";
 import createInstagramPages from "@/lib/createInstagramPages";
+import { getServerSession } from "next-auth";
 
 const dbAdapter = MongoDBAdapter(clientPromise);
 
@@ -74,40 +75,55 @@ export const authOptions = {
         }),
     ],
     callbacks: {
-        async signIn(request: any) {
-            console.log("Running signIn with params: ", request);
+        async signIn({ user, account, profile }: any) {
+            /**
+             * What to do when Sign in request is received?
+             *  Connect the social pages.
+             *
+             */
+
+            const session = await getServerSession(authOptions);
+            console.log("session: ", session);
+
+            console.log("req in SignIn: ", {
+                user: user,
+                account: account,
+                profile: profile,
+            });
+
             await dbConnect();
-            if (request.account.provider === "facebook_business") {
+
+            if (account.provider === "facebook_business") {
                 // TODO: update pages profile pictures on sign in here. This is because the url for images changes and is not reliable for long-term storage
-                const fbPages = await getFacebookPages(
-                    request.profile.id,
-                    request.account.access_token,
-                );
+                const fbPages = await getFacebookPages(profile.id, account.access_token);
                 console.log("Got fb pages while signing in: ", fbPages);
-            } else if (request.account.provider === "instagram_business") {
-                console.log("IG sign in request: ", request);
-                if (request?.profile?.id) {
-                    const fbPages = await FacebookPage.find({ userId: request.user.id });
+                createFacebookPages(user.id, fbPages.data);
+            } else if (account.provider === "instagram_business") {
+                if (profile?.id) {
+                    const fbPages = await FacebookPage.find({ userId: session.user.id });
                     console.log("Found facebook pages in IG sign in request: ", fbPages);
-                    createInstagramPages(request.user.id, request.account.access_token, fbPages);
+                    createInstagramPages(user.id, account.access_token, fbPages);
                 }
-            } else if (request.account.provider === "twitter") {
-                const oauthToken = request.account.oauth_token;
-                const oauthTokenSecret = request.account.oauth_token_secret;
+            } else if (account.provider === "twitter") {
+                const oauthToken = account.oauth_token;
+                const oauthTokenSecret = account.oauth_token_secret;
                 console.log(oauthToken, oauthTokenSecret);
-                const user = await User.findOne({ _id: request.user.id });
-                console.log("USER: ", user);
-                if (user) {
-                    const page = await XPage.find({ pageId: request.profile.id, userId: user._id });
+
+                const session = await getServerSession(authOptions);
+
+                const dbUser = await User.findOne({ _id: session.user.id });
+                console.log("USER: ", dbUser);
+                if (dbUser) {
+                    const page = await XPage.find({ pageId: profile.id, userId: dbUser._id });
                     console.log("PAGE: ", page);
                     if (!page || page.length === 0) {
                         await XPage.create({
-                            pageId: request.profile.id, // ?? is this the correct ID? there are a couple IDs in the twitter request... not sure if I'll ever need this field anyways.
-                            userId: user._id,
+                            pageId: profile.id, // ?? is this the correct ID? there are a couple IDs in the twitter request... not sure if I'll ever need this field anyways.
+                            userId: dbUser._id,
                             accessToken: oauthToken,
                             accessTokenSecret: oauthTokenSecret,
-                            name: request.profile.screen_name,
-                            profilePicture: request.profile.profile_image_url_https,
+                            name: profile.screen_name,
+                            profilePicture: profile.profile_image_url_https,
                         });
                     }
                 }
@@ -119,32 +135,25 @@ export const authOptions = {
             // console.log("Running redirect with params: ", params);
             return params.baseUrl;
         },
-        async jwt({ token, account }: any) {
-            if (account) {
-                token.accessToken = account.access_token;
-                token.pageId = account.providerAccountId;
-            }
+        async jwt({ token }: any) {
+            // token.sub is the mongo user _id field
+            const dbUser = await User.findOne({ _id: token.sub });
 
-            await dbConnect();
-            const user = await User.findOne({ email: token.email });
-            if (user) {
-                token.user_id = user._id.toString();
-                token.first_name = user.first_name;
-                token.last_name = user.last_name;
-                token.credits = user.credits;
-                token.subscription_type = user.subscription_type;
-            }
+            token.credits = dbUser.credits || 5;
+            token.subscription_type = dbUser.subscription_type || null;
+            token.first_name = dbUser.first_name || token.name.split(" ")[0] || "";
+            token.last_name = dbUser.last_name || token.name.split(" ")[1] || "";
+
             return token;
         },
         async session({ session, token }: any) {
             session.accessToken = token.accessToken;
-            session.user.id = token.user_id;
+            session.user.id = token.sub;
             session.user.credits = token.credits;
             session.user.subscription_type = token.subscription_type;
             session.user.first_name = token.first_name;
             session.user.last_name = token.last_name;
-            // If I set this to "token.image", it just gets set to "token.picture" anyways ??
-            session.user.image = token.picture; // I have no idea how it gets set to "picture" instead of "image"
+            session.user.image = token.picture;
 
             // Delete old posts from db
             const deleted = await removeOldPosts(session.user.id);
@@ -158,6 +167,5 @@ export const authOptions = {
     },
 };
 
-export const handler = NextAuth(authOptions);
-
+const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };

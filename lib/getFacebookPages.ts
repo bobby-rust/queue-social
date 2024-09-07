@@ -3,7 +3,6 @@ export default async function getFacebookPages(userId: string, accessToken: stri
     const response = await fetch(getFbPagesUrl);
 
     const pages = await response.json();
-    console.log("Response from facebook for get pages: ", pages);
     for (const page of pages.data) {
         const url = `https://graph.facebook.com/v20.0/${page.id}?access_token=${accessToken}&fields=picture`;
         const response = await fetch(url);

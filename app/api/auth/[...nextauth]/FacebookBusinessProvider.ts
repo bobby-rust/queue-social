@@ -28,6 +28,7 @@ const FacebookBusinessProvider = {
     allowDangerousEmailAccountLinking: true,
     profile(profile: any) {
         console.log("Running profile in facebook provider with params: ", profile);
+
         return {
             id: profile.id,
             name: profile.name,

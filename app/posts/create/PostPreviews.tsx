@@ -8,8 +8,10 @@ import type { SchedulePostForm } from "@/types/types";
 
 const PostPreviews = () => {
     const [selected, setSelected] = useState<"facebook" | "instagram" | "x" | null>(null);
+    // Is this stateful??
     const { values } = useFormikContext<SchedulePostForm>();
 
+    // Is this stateful?? ?  it needs to be how do I make this stateful
     const socialPages = [
         { pages: values.facebook, social: "facebook" },
         { pages: values.instagram, social: "instagram " },
@@ -17,9 +19,9 @@ const PostPreviews = () => {
     ];
 
     const Preview = () => {
-        let preview = null;
+        let preview: any = null;
         socialPages.map(({ pages, social }) => {
-            if (pages.length > 0) {
+            if (pages.length > 0 && !preview) {
                 if (social === "facebook") {
                     preview = <FacebookPostPreview />;
                 } else if (social === "instagram") {
@@ -29,7 +31,6 @@ const PostPreviews = () => {
                 }
             }
         });
-        console.log("REturning preview: ", preview);
 
         return preview;
     };
@@ -51,7 +52,17 @@ const PostPreviews = () => {
                         ),
                 )}
             </div>
-            <Preview />
+            {socialPages.map(({ pages, social }) => {
+                if (pages.length > 0) {
+                    if (social === "facebook") {
+                        return <FacebookPostPreview />;
+                    } else if (social === "instagram") {
+                        return <InstagramPostPreview />;
+                    } else if (social === "x") {
+                        return <div>X preview</div>;
+                    }
+                }
+            })}
         </div>
     );
 };

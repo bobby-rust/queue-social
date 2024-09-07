@@ -36,6 +36,23 @@ const CreatePostSchema = Yup.object().shape({
     unixTimestamp: Yup.number(),
 });
 
+function toggleSelectedPage(
+    social: string,
+    page: any,
+    values: SchedulePostForm,
+    setFieldValue: (oldVal: any, newVal: any) => void,
+) {
+    page.selected = !page.selected;
+    if (values[social].includes(page)) {
+        setFieldValue(
+            social,
+            values[social].filter((p: any) => p._id !== page._id),
+        );
+    } else {
+        setFieldValue(social, [...values[social], page]);
+    }
+}
+
 function combineDateAndTime(date: Date, hours: number, minutes: number, am: boolean) {
     console.log("date: ", date, "hours: ", hours, "minutes: ", minutes);
     if (am && hours === 12) {
@@ -176,13 +193,14 @@ export default function CreatePost() {
                                                             key={page.id}
                                                             page={page}
                                                             checked={page.selected}
-                                                            setChecked={(pageToToggle: any) => {
-                                                                // We can edit pages while we iterate through it because we do not change its length.
-                                                                console.log(
-                                                                    "value[social: ",
-                                                                    values[social],
-                                                                );
-                                                            }}
+                                                            setChecked={() =>
+                                                                toggleSelectedPage(
+                                                                    social,
+                                                                    page,
+                                                                    values,
+                                                                    setFieldValue,
+                                                                )
+                                                            }
                                                         />
                                                     ))}
                                                 </div>
