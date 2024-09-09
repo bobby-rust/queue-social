@@ -2,7 +2,7 @@ import { FacebookPage } from "@/models/FacebookPage";
 import { InstagramPage } from "@/models/InstagramPage";
 import { XPage } from "@/models/XPage";
 
-export interface SchedulePostRequest {
+export interface ISchedulePostRequest {
     userId: string;
     content: string;
     image: { fileUrl: string; fileId: string };
@@ -13,7 +13,7 @@ export interface SchedulePostRequest {
     date: Date;
 }
 
-export interface SchedulePostForm {
+export interface ISchedulePostForm {
     content: string;
     image: { fileUrl: string; fileId: string };
     link: string;
@@ -26,4 +26,10 @@ export interface SchedulePostForm {
     am: boolean;
     unixTimestamp: number;
     [key: string]: any;
+}
+
+export interface SocialPages {
+    facebook: FacebookPage[];
+    instagram: InstagramPage[];
+    x: XPage[];
 }

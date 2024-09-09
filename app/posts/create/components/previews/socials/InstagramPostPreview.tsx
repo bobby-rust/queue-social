@@ -12,7 +12,7 @@ const handleFileUpload = (e: any) => {};
 const InstagramPostPreview = () => {
     const { values }: FormikState<SchedulePostForm> = useFormikContext();
     return (
-        <div className="flex flex-col gap-2 bg-white">
+        <div className="flex flex-col gap-2 bg-white p-5 rounded-md min-w-[300px]">
             <div className="divider h-1 before:h-[1px] after:h-[1px] m-1"></div>
             <div className="flex justify-between">
                 <div className="flex justify-center items-center gap-1">
