@@ -1,5 +1,5 @@
-import FacebookPost from "@/models/FacebookPost";
-import InstagramPost from "@/models/InstagramPost";
+import FacebookPost from "@/models/posts/FacebookPost";
+import InstagramPost from "@/models/posts/InstagramPost";
 
 export default async function removeOldPosts(userId: string) {
     const now = new Date();

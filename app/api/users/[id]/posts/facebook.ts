@@ -1,5 +1,5 @@
-import FacebookPost, { IFacebookPost } from "@/models/FacebookPost";
-import { SchedulePostRequest } from "@/types/types";
+import FacebookPost, { IFacebookPost } from "@/models/posts/FacebookPost";
+import { ISchedulePostRequest } from "@/types/types";
 
 const createFacebookPostJob = async (
     userId: string,
@@ -29,7 +29,7 @@ const createFacebookPostJob = async (
 
 export const submitFacebookPosts = async (
     userId: string,
-    schedulePostRequest: SchedulePostRequest,
+    schedulePostRequest: ISchedulePostRequest,
 ) => {
     for (const page of schedulePostRequest.facebook) {
         const fbPost = {

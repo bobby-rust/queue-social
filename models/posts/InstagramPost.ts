@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { InstagramPage } from "./InstagramPage";
+import { InstagramPage } from "../pages/InstagramPage";
 
 export interface IInstagramPost extends mongoose.Document {
     userId: string;

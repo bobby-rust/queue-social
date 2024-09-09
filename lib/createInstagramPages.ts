@@ -1,4 +1,4 @@
-import InstagramPage from "@/models/InstagramPage";
+import InstagramPage from "@/models/pages/InstagramPage";
 
 export default async function createInstagramPages(
     userId: string,

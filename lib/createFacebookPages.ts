@@ -1,4 +1,4 @@
-import FacebookPage from "@/models/FacebookPage";
+import FacebookPage from "@/models/pages/FacebookPage";
 
 export default async function createFacebookPages(userId: string, pages: any) {
     const fbPages = [];

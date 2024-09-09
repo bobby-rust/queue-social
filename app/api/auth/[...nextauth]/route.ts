@@ -7,14 +7,14 @@ import dbConnect from "@/lib/dbConnect";
 import clientPromise from "@/lib/mongodb";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 import User from "@/models/User";
-import XPage from "@/models/XPage";
+import XPage from "@/models/pages/XPage";
 import { SessionStrategy } from "next-auth";
 import { Types } from "mongoose";
 import removeOldPosts from "@/lib/removeOldPosts";
 import getFacebookPages from "@/lib/getFacebookPages";
 import createFacebookPages from "@/lib/createFacebookPages";
 import InstagramBusinessProvider from "./InstagramBusinessProvider";
-import FacebookPage from "@/models/FacebookPage";
+import FacebookPage from "@/models/pages/FacebookPage";
 import createInstagramPages from "@/lib/createInstagramPages";
 import { getServerSession } from "next-auth";
 

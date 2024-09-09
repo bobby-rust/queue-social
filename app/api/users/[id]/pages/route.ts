@@ -1,6 +1,6 @@
-import FacebookPage from "@/models/FacebookPage";
-import InstagramPage from "@/models/InstagramPage";
-import XPage from "@/models/XPage";
+import FacebookPage from "@/models/pages/FacebookPage";
+import InstagramPage from "@/models/pages/InstagramPage";
+import XPage from "@/models/pages/XPage";
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
     console.log("Got user id: ", params.id);

@@ -1,9 +1,9 @@
-import XPost, { IXPost } from "@/models/XPost";
-import { SchedulePostRequest } from "@/types/types";
+import XPost, { IXPost } from "@/models/posts/XPost";
+import { ISchedulePostRequest } from "@/types/types";
 
 export const submitTwitterPosts = async (
     userId: string,
-    schedulePostRequest: SchedulePostRequest,
+    schedulePostRequest: ISchedulePostRequest,
 ) => {
     for (const page of schedulePostRequest.x) {
         const xPost = {

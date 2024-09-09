@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { FacebookPage } from "./FacebookPage";
+import { FacebookPage } from "../pages/FacebookPage";
 
 export interface IFacebookPost extends mongoose.Document {
     postId: string;

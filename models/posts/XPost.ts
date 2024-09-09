@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { XPage } from "./XPage";
+import { XPage } from "../pages/XPage";
 
 export interface IXPost extends mongoose.Document {
     userId: string;
