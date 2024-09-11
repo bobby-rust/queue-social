@@ -2,7 +2,7 @@ import React from "react";
 import Image from "next/image";
 import { CircleUser } from "lucide-react";
 import { FormikState, useFormikContext } from "formik";
-import { SchedulePostForm } from "@/types/types";
+import { ISchedulePostForm } from "@/types/types";
 import { FileUpload } from "@/components/ui/file-upload";
 
 type Props = {};
@@ -10,9 +10,9 @@ type Props = {};
 const handleFileUpload = (e: any) => {};
 
 const InstagramPostPreview = () => {
-    const { values }: FormikState<SchedulePostForm> = useFormikContext();
+    const { values }: FormikState<ISchedulePostForm> = useFormikContext();
     return (
-        <div className="flex flex-col gap-2 bg-white p-5 rounded-md min-w-[300px]">
+        <div className="flex flex-col gap-2 bg-white p-5 rounded-md min-w-[250px] w-[250px] max-h-[50vh]">
             <div className="divider h-1 before:h-[1px] after:h-[1px] m-1"></div>
             <div className="flex justify-between">
                 <div className="flex justify-center items-center gap-1">
@@ -52,7 +52,7 @@ const InstagramPostPreview = () => {
                     </svg>
                 </p>
             </div>
-            <div className="overflow-hidden flex justify-center items-center">
+            <div className="flex justify-center items-center">
                 {values.image.fileUrl ? (
                     <Image
                         src={values.image.fileUrl}
@@ -62,7 +62,7 @@ const InstagramPostPreview = () => {
                         className="rounded-[3px]"
                     />
                 ) : (
-                    <div className="">
+                    <div>
                         <FileUpload onChange={handleFileUpload} />
                     </div>
                 )}

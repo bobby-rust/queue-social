@@ -24,11 +24,11 @@ export default function Caption({ errors, touched }: Props) {
                         type="textarea"
                         placeholder="Write your post here"
                         as="textarea"
-                        className="textarea textarea-bordered textarea-lg w-full min-h-80"
+                        className="textarea textarea-bordered textarea-lg w-full"
                     />
                 </div>
             ) : (
-                <div className="w-full min-h-80">
+                <div className="w-full">
                     <label className="label">
                         <span className="label-text">Content</span>
                     </label>
@@ -38,7 +38,7 @@ export default function Caption({ errors, touched }: Props) {
                         type="textarea"
                         placeholder="Write your post here"
                         as="textarea"
-                        className="textarea textarea-bordered textarea-lg w-full min-h-80"
+                        className="textarea textarea-bordered textarea-lg w-full"
                     />
                 </div>
             )}

@@ -1,13 +1,13 @@
 // import { utapi } from "@/app/api/uploadthing/core";
-import { SchedulePostRequest } from "@/types/types";
+import { ISchedulePostRequest } from "@/types/types";
 import { submitFacebookPosts } from "./facebook";
 import { submitInstagramPosts } from "./instagram";
 import { submitTwitterPosts } from "./twitter";
 
-import FacebookPost from "@/models/FacebookPost";
+import FacebookPost from "@/models/posts/FacebookPost";
 
 export async function POST(request: Request, { params: params }: { params: { id: string } }) {
-    const schedulePostRequest: SchedulePostRequest = await request.json();
+    const schedulePostRequest: ISchedulePostRequest = await request.json();
     console.log("Got schedule post request in next api: ", schedulePostRequest);
 
     // Post to Facebook

@@ -1,9 +1,9 @@
-import InstagramPost, { IInstagramPost } from "@/models/InstagramPost";
-import { SchedulePostRequest } from "@/types/types";
+import InstagramPost, { IInstagramPost } from "@/models/posts/InstagramPost";
+import { ISchedulePostRequest } from "@/types/types";
 
 export const submitInstagramPosts = async (
     userId: string,
-    schedulePostRequest: SchedulePostRequest,
+    schedulePostRequest: ISchedulePostRequest,
 ) => {
     for (const page of schedulePostRequest.instagram) {
         const igPost = {
