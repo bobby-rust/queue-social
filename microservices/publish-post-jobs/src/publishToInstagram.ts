@@ -9,7 +9,7 @@ const createInstagramMediaContainer = async (post) => {
     }
 
     console.log("Got body in post to IG func: ", post);
-    const url = `https://graph.facebook.com/v20.0/${post.page.pageId}/media?image_url=${post.image.fileUrl}&caption=${post.content}&access_token=${post.page.accessToken}`;
+    const url = `https://graph.facebook.com/v20.0/${post.page.pageId}/media?image_url=${post.image.url}&caption=${post.content}&access_token=${post.page.accessToken}`;
     console.log("Sending request to URL : ", url);
     const response = await fetch(url, {
         method: "POST",
@@ -18,7 +18,7 @@ const createInstagramMediaContainer = async (post) => {
         },
         body: JSON.stringify({
             access_token: post.page.accessToken,
-            image_url: post.image.fileUrl,
+            image_url: post.image.url,
             caption: post.content,
         }),
     });
@@ -35,7 +35,10 @@ const publishInstagramPost = async (post: any) => {
     const createContainerJson = await createInstagramMediaContainer(post);
     if (createContainerJson.error) {
         console.error(createContainerJson.error);
-        return new Response(JSON.stringify({ error: createContainerJson.error }), { status: 500 });
+        return new Response(
+            JSON.stringify({ error: createContainerJson.error }),
+            { status: 500 },
+        );
     }
     const containerId = createContainerJson.id;
 
@@ -66,7 +69,9 @@ const submitInstagramPost = async (post: any) => {
 
     if (json.error) {
         console.log(json.error);
-        return new Response(JSON.stringify({ error: json.error }), { status: 500 });
+        return new Response(JSON.stringify({ error: json.error }), {
+            status: 500,
+        });
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 201 });

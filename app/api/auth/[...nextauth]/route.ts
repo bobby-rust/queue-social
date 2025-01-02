@@ -69,8 +69,8 @@ export const authOptions = {
         FacebookBusinessProvider,
         InstagramBusinessProvider,
         TwitterProvider({
-            clientId: process.env.TWITTER_API_KEY ?? "",
-            clientSecret: process.env.TWITTER_API_SECRET ?? "",
+            clientId: process.env.TWITTER_CLIENT_ID ?? "",
+            clientSecret: process.env.TWITTER_CLIENT_SECRET ?? "",
             allowDangerousEmailAccountLinking: true,
         }),
     ],
@@ -95,14 +95,26 @@ export const authOptions = {
 
             if (account.provider === "facebook_business") {
                 // TODO: update pages profile pictures on sign in here. This is because the url for images changes and is not reliable for long-term storage
-                const fbPages = await getFacebookPages(profile.id, account.access_token);
+                const fbPages = await getFacebookPages(
+                    profile.id,
+                    account.access_token,
+                );
                 console.log("Got fb pages while signing in: ", fbPages);
                 createFacebookPages(user.id, fbPages.data);
             } else if (account.provider === "instagram_business") {
                 if (profile?.id) {
-                    const fbPages = await FacebookPage.find({ userId: session.user.id });
-                    console.log("Found facebook pages in IG sign in request: ", fbPages);
-                    createInstagramPages(user.id, account.access_token, fbPages);
+                    const fbPages = await FacebookPage.find({
+                        userId: session.user.id,
+                    });
+                    console.log(
+                        "Found facebook pages in IG sign in request: ",
+                        fbPages,
+                    );
+                    createInstagramPages(
+                        user.id,
+                        account.access_token,
+                        fbPages,
+                    );
                 }
             } else if (account.provider === "twitter") {
                 const oauthToken = account.oauth_token;
@@ -114,7 +126,10 @@ export const authOptions = {
                 const dbUser = await User.findOne({ _id: session.user.id });
                 console.log("USER: ", dbUser);
                 if (dbUser) {
-                    const page = await XPage.find({ pageId: profile.id, userId: dbUser._id });
+                    const page = await XPage.find({
+                        pageId: profile.id,
+                        userId: dbUser._id,
+                    });
                     console.log("PAGE: ", page);
                     if (!page || page.length === 0) {
                         await XPage.create({
@@ -141,8 +156,10 @@ export const authOptions = {
 
             token.credits = dbUser.credits || 5;
             token.subscription_type = dbUser.subscription_type || null;
-            token.first_name = dbUser.first_name || token.name.split(" ")[0] || "";
-            token.last_name = dbUser.last_name || token.name.split(" ")[1] || "";
+            token.first_name =
+                dbUser.first_name || token.name.split(" ")[0] || "";
+            token.last_name =
+                dbUser.last_name || token.name.split(" ")[1] || "";
 
             return token;
         },

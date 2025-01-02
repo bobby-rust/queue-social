@@ -4,12 +4,12 @@ import dotenv from "dotenv";
 import Agenda from "@hokify/agenda";
 import mongoose from "mongoose";
 import User from "../../../models/User";
-import XPage from "../../../models/XPage";
-import XPost from "../../../models/XPost";
-import InstagramPost from "../../../models/InstagramPost";
-import InstagramPage from "../../../models/InstagramPage";
-import FacebookPost from "../../../models/FacebookPost";
-import FacebookPage from "../../../models/FacebookPage";
+import XPage from "../../../models/pages/XPage";
+import XPost from "../../../models/posts/XPost";
+import InstagramPost from "../../../models/posts/InstagramPost";
+import InstagramPage from "../../../models/pages/InstagramPage";
+import FacebookPost from "../../../models/posts/FacebookPost";
+import FacebookPage from "../../../models/pages/FacebookPage";
 import submitInstagramPost from "./publishToInstagram";
 import submitTwitterPost from "./publishToTwitter";
 import submitFacebookPost from "./publishToFacebook";
@@ -96,7 +96,14 @@ app.listen(PORT, async () => {
 app.post("/schedule-job", async (req, res) => {
     const { userId, content, image, link, page, date, social } = req.body;
     console.log("Got request to schedule job: ", req.body);
-    agenda.schedule(date, `publish ${social} post`, {
+    // agenda.schedule(date, `publish ${social} post`, {
+    //     userId: userId,
+    //     content: content,
+    //     image: image,
+    //     link: link,
+    //     page: page,
+    // });
+    agenda.schedule(new Date(), `publish ${social} post`, {
         userId: userId,
         content: content,
         image: image,

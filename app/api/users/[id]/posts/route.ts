@@ -6,28 +6,43 @@ import { submitTwitterPosts } from "./twitter";
 
 import FacebookPost from "@/models/posts/FacebookPost";
 
-export async function POST(request: Request, { params: params }: { params: { id: string } }) {
+export async function POST(
+    request: Request,
+    { params: params }: { params: { id: string } },
+) {
     const schedulePostRequest: ISchedulePostRequest = await request.json();
     console.log("Got schedule post request in next api: ", schedulePostRequest);
 
     // Post to Facebook
-    const fbResponse = await submitFacebookPosts(params.id, schedulePostRequest);
+    const fbResponse = await submitFacebookPosts(
+        params.id,
+        schedulePostRequest,
+    );
     const fbJson = await fbResponse.json();
     if (!fbJson.success) {
         return new Response(
-            JSON.stringify({ error: "Failed to post to facebook", details: fbJson.error }),
+            JSON.stringify({
+                error: "Failed to post to facebook",
+                details: fbJson.error,
+            }),
             { status: 500 },
         );
     }
 
     console.log("Posted to facebook: ", fbJson);
 
-    const igResponse = await submitInstagramPosts(params.id, schedulePostRequest);
+    const igResponse = await submitInstagramPosts(
+        params.id,
+        schedulePostRequest,
+    );
 
     const igJson = await igResponse.json();
     if (!igJson.success) {
         return new Response(
-            JSON.stringify({ error: "Failed to post to instagram", details: igJson.error }),
+            JSON.stringify({
+                error: "Failed to post to instagram",
+                details: igJson.error,
+            }),
             { status: 500 },
         );
     }
@@ -36,17 +51,26 @@ export async function POST(request: Request, { params: params }: { params: { id:
     const xJson = await xResponse.json();
     if (!xJson.success) {
         return new Response(
-            JSON.stringify({ error: "Failed to post to X", details: xJson.error }),
+            JSON.stringify({
+                error: "Failed to post to X",
+                details: xJson.error,
+            }),
             { status: 500 },
         );
     }
 
-    return new Response(JSON.stringify({ success: true, data: { fb: fbJson } }), {
-        status: 201,
-    });
+    return new Response(
+        JSON.stringify({ success: true, data: { fb: fbJson } }),
+        {
+            status: 201,
+        },
+    );
 }
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(
+    request: Request,
+    { params }: { params: { id: string } },
+) {
     const posts = await FacebookPost.find({ userId: params.id });
     return new Response(JSON.stringify(posts));
 }
