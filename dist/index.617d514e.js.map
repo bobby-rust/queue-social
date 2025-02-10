@@ -1,0 +1,1 @@
+{"mappings":"AAAA;;CAEC,GACD,SAAS;IACL,QAAQ,GAAG,CAAC;AAChB;AAEA","sources":["src/client/index.ts"],"sourcesContent":["/**\n * The main entry-point of the application\n */\nfunction app() {\n    console.log(\"I'm alive!\");\n}\n\napp();\n"],"names":[],"version":3,"file":"index.617d514e.js.map","sourceRoot":"/__parcel_source_root/"}

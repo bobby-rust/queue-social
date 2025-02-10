@@ -1,42 +1,34 @@
 {
-  "compilerOptions": {
-    "baseUrl": ".",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "nodenext",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "paths": {
-      "@/*": [
-        "./*"
-      ]
-    },
-    "target": "ES2017"
-  },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    "./app/*"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+    "compilerOptions": {
+        /* Base Options: */
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "target": "es2022",
+        "allowJs": true,
+        "resolveJsonModule": true,
+        "moduleDetection": "force",
+        "isolatedModules": true,
+        "verbatimModuleSyntax": true,
+        /* Strictness */
+        "strict": true,
+        "noUncheckedIndexedAccess": true,
+        "noImplicitOverride": true,
+        /* If transpiling with TypeScript: */
+        "module": "NodeNext",
+        "outDir": "dist",
+        "rootDir": "src/client",
+        "sourceMap": true,
+        "include": [
+            "src/client/**/*"
+        ],
+        "exclude": [
+            "node_modules"
+        ],
+        /* If your code runs in the DOM: */
+        "lib": [
+            "es2022",
+            "dom",
+            "dom.iterable"
+        ]
+    }
 }
