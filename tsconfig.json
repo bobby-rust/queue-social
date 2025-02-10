@@ -14,12 +14,18 @@
         "noUncheckedIndexedAccess": true,
         "noImplicitOverride": true,
         /* If transpiling with TypeScript: */
-        "module": "NodeNext",
+        "module": "es6",
         "outDir": "dist",
-        "rootDir": "src/client",
+        "rootDir": "src",
+        "baseUrl": "./src",
+        "paths": {
+            "~*": [
+                "./*"
+            ]
+        },
         "sourceMap": true,
         "include": [
-            "src/client/**/*"
+            "src/**/*"
         ],
         "exclude": [
             "node_modules"
