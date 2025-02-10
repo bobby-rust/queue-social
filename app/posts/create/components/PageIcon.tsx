@@ -14,6 +14,7 @@ type Props = {
 
 const PageIcon = (props: Props) => {
     const { social, page, checked, setChecked } = props;
+    console.log("Page.profilePicture: ", page.profilePicture);
     return (
         <div className="flex flex-col justify-center items-center">
             <div className="tooltip" data-tip={page.name}>

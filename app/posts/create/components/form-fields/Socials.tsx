@@ -18,15 +18,20 @@ export default function Socials({ socialPages, values, setFieldValue }: Props) {
     return (
         <div className="flex gap-4">
             {Object.entries(socialPages).map(([social, pages]) => (
-                <div className="flex gap-4">
+                <div className="flex gap-4" key={social}>
                     {pages.map((page: any) => (
                         <PageIcon
                             social={social}
-                            key={page.id}
+                            key={page.id || `${social}-${page.name}`}
                             page={page}
                             checked={page.selected}
                             setChecked={() =>
-                                toggleSelectedPage(social, page, values, setFieldValue)
+                                toggleSelectedPage(
+                                    social,
+                                    page,
+                                    values,
+                                    setFieldValue,
+                                )
                             }
                         />
                     ))}

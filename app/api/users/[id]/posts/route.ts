@@ -8,11 +8,12 @@ import FacebookPost from "@/models/posts/FacebookPost";
 
 export async function POST(
     request: Request,
-    { params: params }: { params: { id: string } },
+    props: { params: Promise<{ id: string }> },
 ) {
     const schedulePostRequest: ISchedulePostRequest = await request.json();
     console.log("Got schedule post request in next api: ", schedulePostRequest);
 
+    const params = await props.params;
     // Post to Facebook
     const fbResponse = await submitFacebookPosts(
         params.id,
@@ -68,9 +69,10 @@ export async function POST(
 }
 
 export async function GET(
-    request: Request,
-    { params }: { params: { id: string } },
+    _: Request,
+    props: { params: Promise<{ id: string }> },
 ) {
+    const params = await props.params;
     const posts = await FacebookPost.find({ userId: params.id });
     return new Response(JSON.stringify(posts));
 }

@@ -94,11 +94,13 @@ export const authOptions = {
             await dbConnect();
 
             if (account.provider === "facebook_business") {
-                // TODO: update pages profile pictures on sign in here. This is because the url for images changes and is not reliable for long-term storage
+                // TODO: update pages profile pictures on sign in here.
+                // This is because the url for images changes and is not reliable for long-term storage
                 const fbPages = await getFacebookPages(
                     profile.id,
                     account.access_token,
                 );
+
                 console.log("Got fb pages while signing in: ", fbPages);
                 createFacebookPages(user.id, fbPages.data);
             } else if (account.provider === "instagram_business") {
