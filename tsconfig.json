@@ -1,40 +1,24 @@
 {
-    "compilerOptions": {
-        /* Base Options: */
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "target": "es2022",
-        "allowJs": true,
-        "resolveJsonModule": true,
-        "moduleDetection": "force",
-        "isolatedModules": true,
-        "verbatimModuleSyntax": true,
-        /* Strictness */
-        "strict": true,
-        "noUncheckedIndexedAccess": true,
-        "noImplicitOverride": true,
-        /* If transpiling with TypeScript: */
-        "module": "es6",
-        "outDir": "dist",
-        "rootDir": "src",
-        "baseUrl": "./src",
-        "paths": {
-            "~*": [
-                "./*"
-            ]
-        },
-        "sourceMap": true,
-        "include": [
-            "src/**/*"
-        ],
-        "exclude": [
-            "node_modules"
-        ],
-        /* If your code runs in the DOM: */
-        "lib": [
-            "es2022",
-            "dom",
-            "dom.iterable"
-        ]
-    }
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": ["src"]
 }
