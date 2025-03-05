@@ -1,6 +1,5 @@
 import "./App.css";
 import { Link } from "react-router";
-import Button from "./components/Button";
 
 function App() {
     return (
@@ -9,10 +8,10 @@ function App() {
                 <h1>Welcome to QueueSocial</h1>
                 <div className="button-wrapper">
                     <Link to="/signin">
-                        <Button text="Sign in" />
+                        <button>Sign In</button>
                     </Link>
                     <Link to="/signup">
-                        <Button text="Sign up" />
+                        <button>Sign Up</button>
                     </Link>
                 </div>
             </div>
