@@ -1,0 +1,19 @@
+nav {
+    width: 100vw;
+    display: flex;
+    justify-content: space-evenly;
+    padding: 1rem;
+}
+
+.navlink {
+    text-decoration: none;
+    color: black;
+}
+
+a.active {
+    color: black;
+}
+
+a:hover {
+    color: #777;
+}
