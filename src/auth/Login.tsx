@@ -33,19 +33,41 @@ export default function Login() {
 
     return (
         <div className="auth">
-            <h1>Sign In</h1>
-            <form
-                className="auth-form"
-                onKeyDown={(e) => e.key == "Enter" && e.preventDefault()}
-            >
-                <label>Username</label>
-                <input {...register("username")} />
-                <label>Email</label>
-                <input type="email" {...register("password")} />
-                <label>Password</label>
-                <input type="password" {...register("password")} />
-                <button onClick={handleSubmit(onSubmit)}>Sign In</button>
-            </form>
+            <div className="auth-form-container">
+                <h1>Sign In</h1>
+                <form
+                    className="auth-form"
+                    onKeyDown={(e) => e.key == "Enter" && e.preventDefault()}
+                >
+                    <div className="input-wrapper">
+                        <label>Username</label>
+                        <input
+                            placeholder="Username"
+                            aria-placeholder="Username"
+                            {...register("username")}
+                        />
+                    </div>
+                    <div className="input-wrapper">
+                        <label>Email</label>
+                        <input
+                            type="email"
+                            placeholder="Email"
+                            aria-placeholder="Email"
+                            {...register("password")}
+                        />
+                    </div>
+                    <div className="input-wrapper">
+                        <label>Password</label>
+                        <input
+                            type="password"
+                            placeholder="Password"
+                            aria-placeholder="Password"
+                            {...register("password")}
+                        />
+                    </div>
+                    <button onClick={handleSubmit(onSubmit)}>Sign In</button>
+                </form>
+            </div>
         </div>
     );
 }

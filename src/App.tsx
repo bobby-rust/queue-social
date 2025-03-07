@@ -3,7 +3,7 @@ import { Link } from "react-router";
 
 function App() {
     return (
-        <>
+        <div className="app">
             <div className="landing">
                 <h1>Welcome to QueueSocial</h1>
                 <div className="button-wrapper">
@@ -15,7 +15,7 @@ function App() {
                     </Link>
                 </div>
             </div>
-        </>
+        </div>
     );
 }
 

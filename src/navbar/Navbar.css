@@ -1,19 +1,19 @@
 nav {
-    width: 100vw;
+    display: flex;
+    padding-top: 1rem;
+}
+
+.nav-links {
     display: flex;
     justify-content: space-evenly;
-    padding: 1rem;
+    width: 33%;
 }
 
 .navlink {
-    text-decoration: none;
-    color: black;
+    width: 33%;
+    text-align: center;
 }
 
-a.active {
-    color: black;
-}
-
-a:hover {
-    color: #777;
+.logo {
+    width: 33%;
 }

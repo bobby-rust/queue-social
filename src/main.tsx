@@ -7,6 +7,7 @@ import Login from "./auth/Login";
 import SignUp from "./auth/SignUp";
 import Home from "./home/Home.tsx";
 import Navbar from "./navbar/Navbar.tsx";
+import Footer from "./footer/Footer.tsx";
 
 createRoot(document.getElementById("root")!).render(
     <StrictMode>
@@ -20,6 +21,7 @@ createRoot(document.getElementById("root")!).render(
                     <Route path="/signup" element={<SignUp />} />
                 </Routes>
             </div>
+            <Footer />
         </BrowserRouter>
     </StrictMode>,
 );

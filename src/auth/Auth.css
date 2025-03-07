@@ -1,9 +1,13 @@
 .auth {
+    height: 100vh;
+}
+
+.auth-form-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    height: 70%;
 }
 
 .auth-form {
@@ -23,4 +27,12 @@
     .auth-form {
         width: 50%;
     }
+}
+
+.auth-link-msg {
+    text-align: center;
+}
+
+.auth-link-msg a {
+    text-decoration: underline;
 }

@@ -2,12 +2,16 @@
 * Landing page styles
 */
 
+.app {
+    height: 100vh;
+}
+
 .landing {
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    height: 100vh;
+    height: 70%;
 }
 
 .button-wrapper {
