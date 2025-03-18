@@ -1,4 +1,4 @@
-import { FormInput } from "../types/auth";
+import { AuthFormInput } from "../types/auth";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -16,7 +16,7 @@ export async function checkLoginStatus(): Promise<boolean> {
     return false;
 }
 
-export async function login(formInput: FormInput) {
+export async function login(formInput: AuthFormInput) {
     const response = await fetch(API_URL + "/auth/login", {
         method: "POST",
         headers: {
@@ -39,7 +39,7 @@ export async function logout() {
     return json;
 }
 
-export async function signUp(formInput: FormInput) {
+export async function signUp(formInput: AuthFormInput) {
     const response = await fetch(API_URL + "/auth/login", {
         method: "POST",
         body: JSON.stringify(formInput),
