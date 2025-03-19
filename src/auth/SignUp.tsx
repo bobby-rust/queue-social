@@ -8,7 +8,6 @@ export default function SignUp() {
     const onSubmit: SubmitHandler<AuthFormInput> = (data: AuthFormInput) => {
         console.log(import.meta.env.VITE_API_URL);
         console.log(data);
-        console.log("Sup");
     };
 
     return (
