@@ -8,7 +8,6 @@ import { useEffect, useState } from "react";
 export default function Login() {
     const { register, handleSubmit } = useForm<AuthFormInput>();
     const navigate = useNavigate();
-
     const [invalidCredentials, setInvalidCredentials] =
         useState<boolean>(false);
 
@@ -17,7 +16,6 @@ export default function Login() {
     ) => {
         const response = await login(formInput);
         if (response.data.success) {
-            console.log("Successfully logged in boss.");
             navigate("/home");
         } else {
             setInvalidCredentials(true);

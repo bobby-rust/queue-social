@@ -1,6 +1,21 @@
+import { useNavigate } from "react-router";
 import { AuthFormInput } from "../types/auth";
+import { useEffect } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL;
+
+export function useProtectedRoute() {
+    const navigate = useNavigate();
+    useEffect(() => {
+        const checkLogin = async () => {
+            const isLoggedIn = await checkLoginStatus();
+            if (!isLoggedIn) {
+                navigate("/login");
+            }
+        };
+        checkLogin();
+    }, []);
+}
 
 export async function checkLoginStatus(): Promise<boolean> {
     const response = await fetch(API_URL + "/auth/me", {
@@ -9,11 +24,7 @@ export async function checkLoginStatus(): Promise<boolean> {
     });
     const json = await response.json();
 
-    if (json.data.success) {
-        return true;
-    }
-
-    return false;
+    return json.data.success;
 }
 
 export async function login(formInput: AuthFormInput) {
@@ -40,8 +51,11 @@ export async function logout() {
 }
 
 export async function signUp(formInput: AuthFormInput) {
-    const response = await fetch(API_URL + "/auth/login", {
+    const response = await fetch(API_URL + "/auth/signup", {
         method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
         body: JSON.stringify(formInput),
     });
 

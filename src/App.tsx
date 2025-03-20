@@ -7,7 +7,7 @@ function App() {
             <div className="landing">
                 <h1>Welcome to QueueSocial</h1>
                 <div className="button-wrapper">
-                    <Link to="/signin">
+                    <Link to="/login">
                         <button>Sign In</button>
                     </Link>
                     <Link to="/signup">

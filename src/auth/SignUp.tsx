@@ -1,13 +1,21 @@
 import "./Auth.css";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { AuthFormInput } from "../types/auth";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { signUp } from "../lib/auth";
 
 export default function SignUp() {
     const { register, handleSubmit } = useForm<AuthFormInput>();
-    const onSubmit: SubmitHandler<AuthFormInput> = (data: AuthFormInput) => {
-        console.log(import.meta.env.VITE_API_URL);
-        console.log(data);
+    const navigate = useNavigate();
+    const onSubmit: SubmitHandler<AuthFormInput> = async (
+        data: AuthFormInput,
+    ) => {
+        const response = await signUp(data);
+        if (response.data.success) {
+            navigate("/login");
+        } else {
+            console.log("Error signing up: ", response);
+        }
     };
 
     return (
@@ -56,7 +64,7 @@ export default function SignUp() {
                     <button onClick={handleSubmit(onSubmit)}>Sign Up</button>
                     <p className="auth-link-msg">
                         Already have an account?{" "}
-                        <Link to="/signin">Sign In</Link>
+                        <Link to="/login">Sign In</Link>
                     </p>
                 </form>
             </div>
