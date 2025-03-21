@@ -17,7 +17,7 @@ export default function Navbar() {
                 <NavLink to="/create-post" className="navlink">
                     Create Post
                 </NavLink>
-                <NavLink to="/create-post" className="navlink">
+                <NavLink to="/link-account" className="navlink">
                     Link Account
                 </NavLink>
             </div>
