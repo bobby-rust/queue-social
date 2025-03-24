@@ -17,3 +17,9 @@ nav {
 .logo {
     width: 33%;
 }
+
+.navbar-right {
+    display: flex;
+    justify-content: flex-end;
+    width: 33%;
+}

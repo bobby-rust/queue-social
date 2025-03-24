@@ -1,7 +1,18 @@
 import { NavLink } from "react-router";
 import "./Navbar.css";
+import { logout } from "../../lib/auth";
+import { useNavigate } from "react-router";
 
 export default function Navbar() {
+    const navigate = useNavigate();
+    async function handleLogout() {
+        const response = await logout();
+        console.log(response);
+        if (response.data.success) {
+            navigate("/login");
+        }
+    }
+
     return (
         <nav>
             <div className="logo">
@@ -20,6 +31,9 @@ export default function Navbar() {
                 <NavLink to="/link-account" className="navlink">
                     Link Account
                 </NavLink>
+            </div>
+            <div className="navbar-right">
+                <button onClick={handleLogout}>Sign out</button>
             </div>
         </nav>
     );

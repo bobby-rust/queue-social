@@ -14,7 +14,7 @@ export function useProtectedRoute() {
             }
         };
         checkLogin();
-    }, []);
+    }, [navigate]);
 }
 
 export async function checkLoginStatus(): Promise<boolean> {
@@ -44,6 +44,10 @@ export async function login(formInput: AuthFormInput) {
 export async function logout() {
     const response = await fetch(API_URL + "/auth/logout", {
         method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
     });
 
     const json = await response.json();

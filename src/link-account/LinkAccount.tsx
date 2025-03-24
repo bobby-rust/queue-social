@@ -1,6 +1,8 @@
+import { useProtectedRoute } from "../lib/auth";
 import "./LinkAccount.css";
 
 export default function LinkAccount() {
+    useProtectedRoute();
     function handleLinkFacebook() { }
 
     return (

@@ -4,3 +4,9 @@
     align-items: center;
     height: 100vh;
 }
+
+.create-post-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
