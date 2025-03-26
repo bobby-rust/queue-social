@@ -1,9 +1,13 @@
 import { useProtectedRoute } from "../lib/auth";
+import { facebookLogin } from "../lib/fb";
 import "./LinkAccount.css";
 
 export default function LinkAccount() {
     useProtectedRoute();
-    function handleLinkFacebook() { }
+    function handleLinkFacebook() {
+        // facebookLogin();
+        window.location.href = "http://localhost:3000/api/v1/fb/link";
+    }
 
     return (
         <div className="link-account">
