@@ -1,7 +1,7 @@
 import "./Auth.css";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { AuthFormInput } from "../types/auth";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { signUp } from "../lib/auth";
 
 export default function SignUp() {

@@ -2,14 +2,14 @@ import "./Auth.css";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { AuthFormInput } from "../types/auth";
 import { checkLoginStatus, login } from "../lib/auth";
-import { useNavigate } from "react-router";
-import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function Login() {
     const { register, handleSubmit } = useForm<AuthFormInput>();
     const navigate = useNavigate();
-    const [invalidCredentials, setInvalidCredentials] =
-        useState<boolean>(false);
+    // const [invalidCredentials, setInvalidCredentials] =
+    //     useState<boolean>(false);
 
     const onSubmit: SubmitHandler<AuthFormInput> = async (
         formInput: AuthFormInput,
@@ -18,7 +18,7 @@ export default function Login() {
         if (response.data.success) {
             navigate("/home");
         } else {
-            setInvalidCredentials(true);
+            // setInvalidCredentials(true);
         }
         console.log(response);
     };
@@ -71,6 +71,9 @@ export default function Login() {
                     </div>
                     <button onClick={handleSubmit(onSubmit)}>Sign In</button>
                 </form>
+                <p className="auth-link-msg">
+                    Don't have an account? <Link to="/signup">Sign up</Link>
+                </p>
             </div>
         </div>
     );

@@ -1,7 +1,7 @@
-import { NavLink } from "react-router";
+import { NavLink } from "react-router-dom";
 import "./Navbar.css";
 import { logout } from "../../lib/auth";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 export default function Navbar() {
     const navigate = useNavigate();
@@ -17,7 +17,7 @@ export default function Navbar() {
         <nav>
             <div className="logo">
                 <NavLink to="/" className="navlink">
-                    queue social
+                    queue_social
                 </NavLink>
             </div>
             <div className="nav-links">
