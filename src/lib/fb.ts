@@ -22,6 +22,5 @@ export async function createFbPost(post: CreatePostForm) {
         console.log(response);
     }
 
-    // create post route expects
-    const body: CreatePostRequestBody = {};
+    const body = {};
 }
