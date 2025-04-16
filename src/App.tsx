@@ -1,7 +1,21 @@
+import { useEffect } from "react";
 import "./App.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { checkLoginStatus } from "./lib/auth";
 
 function App() {
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const checkLogin = async () => {
+            const isLoggedIn = await checkLoginStatus();
+            if (isLoggedIn) {
+                navigate("/home");
+            }
+        };
+
+        checkLogin();
+    }, [navigate]);
     return (
         <div className="app">
             <div className="landing">

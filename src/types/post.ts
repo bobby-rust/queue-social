@@ -8,8 +8,8 @@ export interface CreatePostForm {
 }
 
 export interface CreatePostRequestBody {
-    pageId: string;
+    pageIds: string[];
     text: string;
     imageUrl: string;
-    scheduledPublishTime: string;
+    scheduledPublishTime: number;
 }

@@ -29,7 +29,6 @@ export default function Login() {
             if (isLoggedIn) {
                 navigate("/home");
             }
-            console.log(isLoggedIn);
         };
 
         checkLogin();

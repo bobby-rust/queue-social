@@ -11,7 +11,9 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 const getPages = async () => {
     const userId = extractUserIdFromJwt();
-    const response = await fetch(API_URL + `/fb/accounts/${userId}`);
+    const response = await fetch(API_URL + `/fb/accounts/${userId}`, {
+        credentials: "include",
+    });
     const json = await response.json();
     return json;
 };
@@ -30,8 +32,7 @@ export default function CreatePost() {
 
     const selectedPages = watch("pages");
 
-    // Toggle handler
-    const togglePage = (page: Page) => {
+    const handleSelectPage = (page: Page) => {
         const isSelected = selectedPages?.some((p) => p.id === page.id);
         const updatedPages = isSelected
             ? selectedPages.filter((p) => p.id !== page.id)
@@ -85,7 +86,7 @@ export default function CreatePost() {
                                     <input
                                         type="checkbox"
                                         checked={isChecked}
-                                        onChange={() => togglePage(page)}
+                                        onChange={() => handleSelectPage(page)}
                                     />
                                     {page.name}
                                 </label>

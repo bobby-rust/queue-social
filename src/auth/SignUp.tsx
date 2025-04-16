@@ -2,7 +2,8 @@ import "./Auth.css";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { AuthFormInput } from "../types/auth";
 import { Link, useNavigate } from "react-router-dom";
-import { signUp } from "../lib/auth";
+import { checkLoginStatus, signUp } from "../lib/auth";
+import { useEffect } from "react";
 
 export default function SignUp() {
     const { register, handleSubmit } = useForm<AuthFormInput>();
@@ -17,6 +18,17 @@ export default function SignUp() {
             console.log("Error signing up: ", response);
         }
     };
+
+    useEffect(() => {
+        const checkLogin = async () => {
+            const isLoggedIn = await checkLoginStatus();
+            if (isLoggedIn) {
+                navigate("/home");
+            }
+        };
+
+        checkLogin();
+    }, [navigate]);
 
     return (
         <div className="auth">
