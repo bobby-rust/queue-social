@@ -5,22 +5,40 @@ import { CreatePostForm } from "../types/post";
 import { createFbPost } from "../lib/fb";
 import { extractUserIdFromJwt } from "../lib/utils";
 import { useEffect, useState } from "react";
+import { Page } from "../types/page";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const getAccounts = async () => {
+const getPages = async () => {
     const userId = extractUserIdFromJwt();
     const response = await fetch(API_URL + `/fb/accounts/${userId}`);
     const json = await response.json();
-    console.log(json);
+    return json;
 };
-
 
 export default function CreatePost() {
     useProtectedRoute();
-    const [accounts, setAccounts] = useState<any>(null);
 
-    const { register, handleSubmit } = useForm<CreatePostForm>();
+    const [pages, setPages] = useState<Page[] | null>(null);
+    const { register, handleSubmit, setValue, watch } = useForm<CreatePostForm>(
+        {
+            defaultValues: {
+                pages: [],
+            },
+        },
+    );
+
+    const selectedPages = watch("pages");
+
+    // Toggle handler
+    const togglePage = (page: Page) => {
+        const isSelected = selectedPages?.some((p) => p.id === page.id);
+        const updatedPages = isSelected
+            ? selectedPages.filter((p) => p.id !== page.id)
+            : [...(selectedPages ?? []), page];
+        setValue("pages", updatedPages);
+    };
+
     const onSubmit: SubmitHandler<CreatePostForm> = async (
         formInput: CreatePostForm,
     ) => {
@@ -28,23 +46,26 @@ export default function CreatePost() {
         console.log(response);
     };
 
+    useEffect(() => {
+        const fetchPages = async () => {
+            try {
+                const pagesData = await getPages();
+                setPages(pagesData.data.pages);
+            } catch (error) {
+                console.error("Error fetching pages:", error);
+            }
+        };
+
+        fetchPages();
+    }, []);
 
     useEffect(() => {
-        const fetchAccounts = async () => {
-          try {
-            const accountsData = await getAccounts();
-            setAccounts(accountsData);
-          } catch (error) {
-            console.error("Error fetching accounts:", error);
-          }
-        };
-        
-        fetchAccounts();
-      }, []);
+        console.log("pages : ", pages);
+    }, [pages]);
 
-      useEffect(() => {
-        console.log("Accounts: ", accounts);
-      }, [accounts])
+    useEffect(() => {
+        console.log("Pages selected: ", selectedPages);
+    }, [selectedPages]);
 
     return (
         <div className="create-post">
@@ -53,6 +74,24 @@ export default function CreatePost() {
                 className="create-post-form"
                 onKeyDown={(e) => e.key == "Enter" && e.preventDefault()}
             >
+                {pages &&
+                    pages.map((page) => {
+                        const isChecked = selectedPages?.some(
+                            (p) => p.id === page.id,
+                        );
+                        return (
+                            <div key={page.id} className="page-toggle">
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={isChecked}
+                                        onChange={() => togglePage(page)}
+                                    />
+                                    {page.name}
+                                </label>
+                            </div>
+                        );
+                    })}
                 <div className="input-wrapper">
                     <label>Post Text</label>
                     <input
@@ -69,6 +108,16 @@ export default function CreatePost() {
                         placeholder="Post Image"
                         aria-placeholder="Post Image"
                         {...register("image")}
+                    />
+                </div>
+
+                <div className="input-wrapper">
+                    <label>Scheduled Publish Time</label>
+                    <input
+                        type="datetime-local"
+                        {...register("scheduledPublishTime", {
+                            required: true,
+                        })}
                     />
                 </div>
                 <div className="input-wrapper">

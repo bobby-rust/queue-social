@@ -1,7 +1,10 @@
+import { Page } from "./page";
+
 export interface CreatePostForm {
     text: string;
     image: File[];
-    // Bunch of other stuffs eventually
+    pages: Page[];
+    scheduledPublishTime: number;
 }
 
 export interface CreatePostRequestBody {

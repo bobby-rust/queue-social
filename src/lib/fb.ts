@@ -15,6 +15,8 @@ export async function facebookLogin() {
 }
 
 export async function createFbPost(post: CreatePostForm) {
+    console.log("Creating post: ", post);
+    return;
     let imageUrl;
     if (post.image.length) {
         const response = await uploadImage(post.image);
