@@ -13,3 +13,10 @@ export interface CreatePostRequestBody {
     imageUrl: string;
     scheduledPublishTime: number;
 }
+
+export interface IPost {
+    pageIds: string[];
+    text: string;
+    imageUrl?: string;
+    scheduledPublishTime: number;
+}
